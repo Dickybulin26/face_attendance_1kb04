@@ -77,14 +77,6 @@ python app.py
 
 ---
 
-## 🖥️ Tampilan UI
-
-| Dashboard Utama | Laporan Riwayat |
-| --- | --- |
-|  |  |
-
----
-
 ## ⚠️ Catatan
 
 * **Pencahayaan**: Kualitas pengenalan sangat bergantung pada pencahayaan ruangan saat pendaftaran wajah.
