@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Absensi - Dark Glassmorphism</title>
+    <title>AbsensiPro - Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+
     <style>
         :root {
             --bg-dark: #121212;
-            --panel-dark: #1e1e1e;
             --glass-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --accent: #3498db;
@@ -16,175 +18,103 @@
             --warning: #f1c40f;
             --danger: #e74c3c;
             --text-main: #e0e0e0;
-            --text-dim: #b0b0b0;
         }
 
         body { 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            background-color: var(--bg-dark); 
-            color: var(--text-main);
-            overflow: hidden;
+            font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-dark); 
+            color: var(--text-main); overflow: hidden;
             background-image: radial-gradient(circle at 20% 30%, #1a1a1a 0%, #121212 100%);
         }
 
-        /* --- Navbar (Dark Glass) --- */
+        /* --- NAVBAR --- */
         .navbar { 
-            background: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 0.8rem 5%; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
+            background: rgba(30, 30, 30, 0.8); backdrop-filter: blur(10px);
+            padding: 0.8rem 5%; display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--glass-border);
-            position: relative;
-            z-index: 1000;
         }
 
-        .navbar h2 { margin: 0; font-size: 1.4rem; color: var(--accent); letter-spacing: -0.5px; }
+        .nav-links { display: flex; align-items: center; gap: 25px; }
+        .nav-links a { color: var(--text-main); text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
+        .nav-links a:hover { color: var(--accent); }
+        .nav-links a.admin-link { color: var(--warning); font-weight: 600; }
 
-        .nav-links a { 
-            color: var(--text-dim); 
-            text-decoration: none; 
-            margin-left: 20px; 
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: 0.3s;
+        .nav-right { display: flex; align-items: center; gap: 20px; }
+
+        .switch { position: relative; display: inline-block; width: 46px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333; transition: .4s; border-radius: 24px;
         }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(24px); }
 
-        .nav-links a:hover { color: var(--white); text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        .logout-btn { 
+            color: var(--danger); text-decoration: none; font-weight: 600; 
+            padding: 6px 14px; border-radius: 8px; border: 1px solid var(--danger);
+            transition: 0.3s; font-size: 0.85rem;
+        }
+        .logout-btn:hover { background: var(--danger); color: white; }
 
-        /* --- Layout --- */
+        /* --- LAYOUT --- */
         .container { display: flex; height: calc(100vh - 65px); }
-
-        /* --- Panel Kiri (Kamera) --- */
-        .left-panel { 
-            flex: 1.4; 
-            padding: 40px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-        }
+        .left-panel { flex: 1.4; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
         #video-container { 
-            width: 100%; 
-            max-width: 600px; 
-            aspect-ratio: 4/3;
-            border-radius: 24px; 
-            overflow: hidden; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            border: 1px solid var(--glass-border);
-            background: #000;
-            position: relative;
+            width: 100%; max-width: 600px; aspect-ratio: 4/3;
+            border-radius: 24px; overflow: hidden; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 2px solid var(--glass-border);
+            background: #000; position: relative;
         }
 
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        #output_canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
 
         .scan-line {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 2px;
-            background: var(--accent);
-            box-shadow: 0 0 20px var(--accent);
-            animation: scan 3s infinite linear;
-            z-index: 5;
-            display: none;
+            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: var(--success); box-shadow: 0 0 20px var(--success);
+            animation: scan 1.5s infinite linear; z-index: 6; display: none;
         }
 
-        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
-
-        .btn-scan { 
-            margin-top: 30px; 
-            padding: 16px 60px; 
-            font-size: 1rem; 
-            background: var(--accent); 
-            color: white; 
-            border: none; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-weight: 600;
-            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.2);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-
-        .btn-scan:hover { transform: translateY(-2px); background: #2980b9; box-shadow: 0 15px 25px rgba(52, 152, 219, 0.3); }
-        .btn-scan:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; box-shadow: none; }
+        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
 
         .status-msg { 
-            margin-top: 20px; 
-            font-size: 0.95rem; 
-            padding: 10px 25px;
-            border-radius: 12px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            transition: 0.3s;
+            margin-top: 30px; font-size: 1.1rem; font-weight: 600; padding: 15px 40px;
+            border-radius: 50px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+            min-width: 350px; text-align: center;
         }
 
-        /* --- Panel Kanan (Log) --- */
-        .right-panel { 
-            flex: 0.6; 
-            padding: 30px; 
-            background: rgba(25, 25, 25, 0.5);
-            backdrop-filter: blur(5px);
-            overflow-y: auto;
-            border-left: 1px solid var(--glass-border);
-        }
-
-        .log-header { 
-            font-size: 1.2rem; 
-            font-weight: 600; 
-            margin-bottom: 25px; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .log-header span { font-size: 0.8rem; background: var(--glass-bg); padding: 4px 12px; border-radius: 8px; border: 1px solid var(--glass-border); }
-
-        /* Kartu Log Glassmorphism */
-        .log-card { 
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            padding: 16px 20px; 
-            border-radius: 16px; 
-            margin-bottom: 15px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border: 1px solid var(--glass-border);
-            animation: slideIn 0.4s ease-out;
-            transition: 0.3s;
-        }
-
-        .log-card:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); transform: translateX(-5px); }
-
-        .log-name { font-weight: 600; color: #fff; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; }
-        .log-time { color: var(--text-dim); font-size: 0.85rem; }
-
-        /* Status Colors */
-        .success { border-color: var(--success); color: var(--success); background: rgba(46, 204, 113, 0.1); }
-        .warning { border-color: var(--warning); color: var(--warning); background: rgba(241, 196, 15, 0.1); }
-        .error { border-color: var(--danger); color: var(--danger); background: rgba(231, 76, 60, 0.1); }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-
-        /* Scrollbar */
-        .right-panel::-webkit-scrollbar { width: 5px; }
-        .right-panel::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .right-panel { flex: 0.6; padding: 30px; background: rgba(25, 25, 25, 0.5); backdrop-filter: blur(5px); overflow-y: auto; border-left: 1px solid var(--glass-border); }
+        .log-card { background: var(--glass-bg); padding: 16px 20px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; border: 1px solid var(--glass-border); }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <h2>📷 <span style="color: white;">Absensi</span>Pro</h2>
-        <div class="nav-links">
-            <a href="/">Dashboard</a>
-            <a href="/riwayat">Riwayat</a>
-            {% if role == 'admin' %}
-                <a href="/tambah_wajah" style="color: var(--warning);">➕ Admin</a>
-            {% endif %}
-            <a href="/logout">Logout</a>
+        <div style="display: flex; align-items: center; gap: 30px;">
+            <h2 style="margin:0; color:var(--accent);">📷 AbsensiPro</h2>
+            <div class="nav-links">
+                <a href="/">Scanner</a>
+                <a href="/riwayat">Riwayat</a>
+                {% if role == 'admin' %}
+                <a href="/tambah_wajah" class="admin-link">➕ Tambah Wajah</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="scan-status-text" style="font-size: 0.8rem; font-weight: 600; color: var(--danger);">SCAN OFF</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-scan">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <a href="/logout" class="logout-btn">Logout</a>
         </div>
     </nav>
 
@@ -192,110 +122,181 @@
         <div class="left-panel">
             <div id="video-container">
                 <div class="scan-line" id="scan-line"></div>
-                <video id="video" autoplay muted></video>
+                <video id="input_video" autoplay muted></video>
+                <canvas id="output_canvas"></canvas>
             </div>
-            
-            <button id="snap" class="btn-scan">📸 MULAI IDENTIFIKASI</button>
-            <div id="timer" style="margin-top: 15px; font-weight: 600; color: var(--warning); font-size: 0.9rem;"></div>
-            <div id="result" class="status-msg">System Ready</div>
-            
-            <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+            <div id="timer" style="margin-top: 15px; font-weight: 600; color: var(--warning); height: 24px;"></div>
+            <div id="result" class="status-msg">Aktifkan Saklar Scan</div>
         </div>
 
         <div class="right-panel">
-            <div class="log-header">
-                Activity Today
-                <span id="log-count">0</span>
-            </div>
-            <div id="log-list">
-                <p style="text-align:center; color: var(--text-dim); margin-top: 40px;">Fetching logs...</p>
-            </div>
+            <h3>Aktivitas Hari Ini (<span id="log-count">0</span>)</h3>
+            <div id="log-list"></div>
         </div>
     </div>
 
+    <canvas id="capture_canvas" width="640" height="480" style="display:none;"></canvas>
+
     <script>
-        // JS Logika tetap sama dengan sebelumnya
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const snap = document.getElementById('snap');
+        // Logika JavaScript tetap sama seperti versi High-Speed sebelumnya
+        const videoElement = document.getElementById('input_video');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
         const resultDiv = document.getElementById('result');
         const logListDiv = document.getElementById('log-list');
         const scanLine = document.getElementById('scan-line');
         const timerDiv = document.getElementById('timer');
-        const logCount = document.getElementById('log-count');
+        const toggleScan = document.getElementById('toggle-scan');
+        const statusText = document.getElementById('scan-status-text');
 
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => { video.srcObject = stream; })
-            .catch(err => { resultDiv.innerText = "Camera Error"; });
+        let faceStartTime = null;
+        let isProcessing = false;
+        let scanEnabled = false;
 
-        function updateLog() {
-            fetch('/api/today_log')
-            .then(res => res.json())
-            .then(data => {
-                logListDiv.innerHTML = "";
-                logCount.innerText = data.length;
-                if (data.length === 0) {
-                    logListDiv.innerHTML = "<p style='text-align:center; color:var(--text-dim); margin-top: 40px;'>No attendance yet.</p>";
-                    return;
-                }
-                data.forEach((item, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'log-card';
-                    card.style.animationDelay = `${index * 0.05}s`;
-                    card.innerHTML = `<span class="log-name">👤 ${item.nama}</span><span class="log-time">${item.waktu}</span>`;
-                    logListDiv.appendChild(card);
+        const SCAN_DURATION = 1.0; 
+        const COOLDOWN_DURATION = 3;
+
+        toggleScan.addEventListener('change', (e) => {
+            scanEnabled = e.target.checked;
+            statusText.innerText = scanEnabled ? "SCAN ON" : "SCAN OFF";
+            statusText.style.color = scanEnabled ? "var(--success)" : "var(--danger)";
+            if(!scanEnabled) {
+                resultDiv.innerText = "Sistem Scan Dimatikan";
+                resultDiv.className = "status-msg";
+                faceStartTime = null;
+                canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            } else {
+                resultDiv.innerText = "Mencari Wajah...";
+            }
+        });
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        const faceDetection = new FaceDetection({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
+        });
+
+        faceDetection.setOptions({ model: 'short', minDetectionConfidence: 0.6 });
+
+        faceDetection.onResults((results) => {
+            if (!scanEnabled || isProcessing) {
+                canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                return;
+            }
+
+            canvasElement.width = videoElement.clientWidth;
+            canvasElement.height = videoElement.clientHeight;
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            
+            if (results.detections.length > 0) {
+                if (!faceStartTime) faceStartTime = Date.now();
+                const elapsed = (Date.now() - faceStartTime) / 1000;
+                
+                results.detections.forEach(detection => {
+                    const bbox = detection.boundingBox;
+                    const x = bbox.xCenter * canvasElement.width - (bbox.width * canvasElement.width / 2);
+                    const y = bbox.yCenter * canvasElement.height - (bbox.height * canvasElement.height / 2);
+                    
+                    canvasCtx.strokeStyle = elapsed >= SCAN_DURATION ? "#2ecc71" : "#3498db";
+                    canvasCtx.lineWidth = 4;
+                    canvasCtx.strokeRect(x, y, bbox.width * canvasElement.width, bbox.height * canvasElement.height);
+                    
+                    const percent = Math.min(Math.floor((elapsed/SCAN_DURATION)*100), 100);
+                    resultDiv.innerText = `SCANNING: ${percent}%`;
+                    resultDiv.className = "status-msg warning";
                 });
-            });
-        }
 
-        updateLog();
-
-        function startCooldown(seconds) {
-            snap.disabled = true;
-            scanLine.style.display = "none";
-            let remaining = seconds;
-            const interval = setInterval(() => {
-                timerDiv.innerText = `SECURE COOLDOWN: ${remaining}s`;
-                remaining--;
-                if (remaining < 0) {
-                    clearInterval(interval);
-                    snap.disabled = false;
-                    timerDiv.innerText = "";
-                    resultDiv.innerText = "System Ready";
-                    resultDiv.className = "status-msg";
+                if (elapsed >= SCAN_DURATION) {
+                    faceStartTime = null;
+                    executeAbsensi();
                 }
-            }, 1000);
-        }
+            } else {
+                faceStartTime = null;
+                resultDiv.innerText = "MENUNGGU WAJAH...";
+                resultDiv.className = "status-msg";
+            }
+            canvasCtx.restore();
+        });
 
-        snap.addEventListener('click', () => {
-            resultDiv.innerText = "ANALYZING...";
-            resultDiv.className = "status-msg";
+        const camera = new Camera(videoElement, {
+            onFrame: async () => { await faceDetection.send({image: videoElement}); },
+            width: 640, height: 480
+        });
+        camera.start();
+
+        function executeAbsensi() {
+            isProcessing = true;
+            resultDiv.innerText = "IDENTIFIKASI...";
             scanLine.style.display = "block";
             
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, 640, 480);
+            const captureCanvas = document.getElementById('capture_canvas');
+            captureCanvas.getContext('2d').drawImage(videoElement, 0, 0, 640, 480);
             
             fetch('/process_image', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: canvas.toDataURL('image/jpeg') })
+                body: JSON.stringify({ image: captureCanvas.toDataURL('image/jpeg') })
             })
             .then(r => r.json())
             .then(data => {
-                resultDiv.innerText = data.message.toUpperCase();
                 if(data.status === 'success') {
-                    resultDiv.classList.add('success');
+                    resultDiv.innerText = "BERHASIL";
+                    resultDiv.className = "status-msg success";
+                    speak(`Terima kasih ${data.nama}`);
                     updateLog(); 
-                    startCooldown(3);
-                } else if(data.status === 'warning') {
-                    resultDiv.classList.add('warning');
-                    scanLine.style.display = "none";
-                } else {
-                    resultDiv.classList.add('error');
+                    startCooldown(COOLDOWN_DURATION);
+                } 
+                else if(data.status === 'already_present' || data.status === 'warning') {
+                    resultDiv.innerText = "SUDAH ABSEN";
+                    resultDiv.className = "status-msg warning";
+                    speak(`${data.nama} sudah absen`);
+                    startCooldown(COOLDOWN_DURATION);
+                }
+                else {
+                    resultDiv.innerText = "TIDAK DIKENAL";
+                    resultDiv.className = "status-msg error";
+                    speak("Wajah tidak dikenal");
+                    setTimeout(() => { isProcessing = false; faceStartTime = null; }, 2000);
                     scanLine.style.display = "none";
                 }
             });
-        });
+        }
+
+        function startCooldown(s) {
+            scanLine.style.display = "none";
+            let count = s;
+            const timer = setInterval(() => {
+                timerDiv.innerText = `NEXT SCAN IN: ${count}s`;
+                count--;
+                if(count < 0) {
+                    clearInterval(timer);
+                    isProcessing = false;
+                    faceStartTime = null;
+                    timerDiv.innerText = "";
+                    if(scanEnabled) resultDiv.innerText = "Mencari Wajah...";
+                }
+            }, 1000);
+        }
+
+        function updateLog() {
+            fetch('/api/today_log').then(res => res.json()).then(data => {
+                logListDiv.innerHTML = "";
+                document.getElementById('log-count').innerText = data.length;
+                data.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'log-card';
+                    card.innerHTML = `<span>👤 ${item.nama}</span><span>${item.waktu}</span>`;
+                    logListDiv.appendChild(card);
+                });
+            });
+        }
+        updateLog();
     </script>
 </body>
 </html>
