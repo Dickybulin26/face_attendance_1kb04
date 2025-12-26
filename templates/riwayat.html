@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Absensi - Dark Glassmorphism</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --panel-dark: #1e1e1e;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent: #3498db;
+            --danger: #e74c3c;
+            --text-main: #e0e0e0;
+            --text-dim: #b0b0b0;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-dark); 
+            color: var(--text-main);
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 20% 30%, #1a1a1a 0%, #121212 100%);
+            min-height: 100vh;
+        }
+
+        /* --- Navbar (Glassmorphism) --- */
+        .navbar { 
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 1rem 5%; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar h2 { margin: 0; font-size: 1.4rem; color: var(--accent); letter-spacing: -0.5px; }
+        .navbar h2 span { color: white; }
+
+        .nav-links a { 
+            color: var(--text-dim); 
+            text-decoration: none; 
+            margin-left: 25px; 
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover { color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+
+        /* --- Container --- */
+        .container { 
+            max-width: 1000px; 
+            margin: 40px auto; 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(15px);
+            padding: 30px; 
+            border-radius: 24px; 
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        h1 { 
+            text-align: left; 
+            color: white; 
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 1.8rem;
+        }
+
+        /* --- Table Styling --- */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 16px;
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0 8px; /* Memberi jarak antar baris */
+        }
+
+        th { 
+            background-color: rgba(255, 255, 255, 0.03);
+            color: var(--accent); 
+            padding: 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        td { 
+            padding: 18px; 
+            background: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid var(--glass-border);
+            border-bottom: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        /* Rounded corners untuk baris glassmorphism */
+        td:first-child { border-left: 1px solid var(--glass-border); border-radius: 12px 0 0 12px; }
+        td:last-child { border-right: 1px solid var(--glass-border); border-radius: 0 12px 12px 0; }
+
+        tr {
+            animation: fadeIn 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        /* Hover row effect */
+        tbody tr:hover td {
+            background-color: rgba(255, 255, 255, 0.07);
+            transform: scale(1.01);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .name-tag {
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- Buttons --- */
+        .btn-delete {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-delete:hover {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* --- Animations --- */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-15px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Staggered delay */
+        {% for log in logs %}
+        tr:nth-child({{ loop.index }}) { animation-delay: {{ loop.index * 0.05 }}s; }
+        {% endfor %}
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 0;
+        }
+
+        .empty-state p { color: var(--text-dim); font-size: 1.1rem; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <h2>📷 <span>Absensi</span>Pro</h2>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/riwayat">Riwayat</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Laporan Riwayat</h1>
+        
+        <div class="table-responsive">
+            {% if logs %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Peserta</th>
+                        <th>Tanggal</th>
+                        <th>Waktu Masuk</th>
+                        {% if session.get('role') == 'admin' %}
+                        <th style="text-align: center;">Aksi</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr id="row-{{ log._id }}">
+                        <td style="color: var(--accent); font-weight: bold;">{{ loop.index }}</td>
+                        <td><span class="name-tag">👤 {{ log.nama }}</span></td>
+                        <td style="color: var(--text-dim);">{{ log.tanggal }}</td>
+                        <td style="color: var(--text-dim);">{{ log.waktu }}</td>
+                        {% if session.get('role') == 'admin' %}
+                        <td style="text-align: center;">
+                            <button class="btn-delete" onclick="confirmDelete('{{ log._id }}')">
+                                Hapus
+                            </button>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <p>Belum ada data terekam.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+    function confirmDelete(id) {
+        if (confirm("Hapus data absensi ini secara permanen dari database?")) {
+            const row = document.getElementById(`row-${id}`);
+            
+            // Animasi Glass Out
+            row.style.transition = "all 0.5s ease";
+            row.style.opacity = "0";
+            row.style.transform = "translateX(100px) scale(0.9)";
+
+            setTimeout(() => {
+                fetch(`/delete_log/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        row.remove();
+                    } else {
+                        row.style.opacity = "1";
+                        row.style.transform = "translateX(0) scale(1)";
+                        alert("Gagal menghapus: " + data.message);
+                    }
+                });
+            }, 500);
+        }
+    }
+    </script>
+</body>
+</html>

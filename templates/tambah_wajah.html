@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendaftaran Personel - AbsensiPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent: #3498db;
+            --text-main: #e0e0e0;
+            --text-dim: #b0b0b0;
+            --warning: #f1c40f;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-dark); 
+            color: var(--text-main);
+            background-image: radial-gradient(circle at 20% 30%, #1a1a1a 0%, #121212 100%);
+            min-height: 100vh;
+        }
+
+        /* --- Navbar --- */
+        .navbar { 
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1rem 5%; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .navbar h2 { margin: 0; font-size: 1.4rem; color: var(--accent); }
+        .nav-links a { color: var(--text-dim); text-decoration: none; margin-left: 20px; font-weight: 500; transition: 0.3s; }
+        .nav-links a:hover { color: white; }
+
+        /* --- Layout --- */
+        .container { 
+            max-width: 1100px; 
+            margin: 50px auto; 
+            display: flex; 
+            gap: 30px; 
+            padding: 0 20px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .box { 
+            flex: 1; 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(15px);
+            padding: 30px; 
+            border-radius: 24px; 
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1 { font-size: 1.8rem; margin-bottom: 25px; font-weight: 600; text-align: center; color: white; }
+        h3 { color: var(--accent); margin-top: 0; }
+
+        /* --- Kamera --- */
+        .video-wrapper {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid var(--glass-border);
+            position: relative;
+            background: #000;
+        }
+
+        video { width: 100%; display: block; transform: scaleX(-1); }
+
+        /* --- Input & Button --- */
+        .input-group { margin-top: 20px; }
+        
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 12px; 
+            color: white; 
+            font-size: 1rem; 
+            margin-bottom: 25px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); }
+
+        .btn-save { 
+            width: 100%; 
+            padding: 16px; 
+            background: var(--accent); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.2);
+        }
+
+        .btn-save:hover { transform: translateY(-3px); background: #2980b9; box-shadow: 0 15px 25px rgba(52, 152, 219, 0.3); }
+
+        #msg { margin-top: 15px; font-size: 0.9rem; text-align: center; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) { .container { flex-direction: column; } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <h2>📷 <span>Absensi</span>Pro</h2>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/riwayat">Riwayat</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <h1>Pendaftaran Personel Baru</h1>
+
+    <div class="container">
+        <div class="box">
+            <h3>Preview Kamera</h3>
+            <div class="video-wrapper">
+                <video id="video" autoplay muted></video>
+            </div>
+            <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 15px;">
+                💡 Pastikan wajah terlihat jelas dan pencahayaan cukup.
+            </p>
+        </div>
+
+        <div class="box">
+            <h3>Informasi Personel</h3>
+            <div class="input-group">
+                <label style="display: block; margin-bottom: 10px; font-size: 0.9rem; color: var(--text-dim);">Nama Lengkap</label>
+                <input type="text" id="nama" placeholder="Contoh: Farell">
+                
+                <button class="btn-save" onclick="simpanWajah()">
+                    📸 AMBIL FOTO & DAFTARKAN
+                </button>
+            </div>
+            <div id="msg"></div>
+        </div>
+    </div>
+
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+
+    <script>
+        const video = document.getElementById('video');
+        const msg = document.getElementById('msg');
+
+        // Akses Webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => { msg.innerHTML = "<span style='color:var(--danger)'>Gagal akses kamera</span>"; });
+
+        function simpanWajah() {
+            const nama = document.getElementById('nama').value;
+            if(!nama) return alert("Nama tidak boleh kosong!");
+
+            msg.innerHTML = "<span style='color:var(--warning)'>Sedang memproses...</span>";
+
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            
+            // Flip horizontal agar hasil foto sama dengan preview mirror
+            context.translate(640, 0);
+            context.scale(-1, 1);
+            context.drawImage(video, 0, 0, 640, 480);
+            
+            const dataURL = canvas.toDataURL('image/jpeg');
+
+            const formData = new FormData();
+            formData.append('nama', nama);
+            formData.append('image_base64', dataURL);
+
+            fetch('/tambah_wajah', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert(data.message);
+                    window.location.href = "/";
+                } else {
+                    msg.innerHTML = `<span style='color:var(--danger)'>${data.message}</span>`;
+                }
+            })
+            .catch(err => {
+                msg.innerHTML = "<span style='color:var(--danger)'>Error Server</span>";
+            });
+        }
+    </script>
+</body>
+</html>
