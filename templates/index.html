@@ -1,246 +1,174 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AbsensiPro - Clean Scanner</title>
+{% extends "base.html" %}
+
+{% block title %}Smart Scan Pro - Auto Voice{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+
+<style>
+    .laser-line {
+        position: absolute; width: 100%; height: 3px;
+        background: linear-gradient(to right, transparent, #fff, #3b82f6, #fff, transparent);
+        box-shadow: 0 0 15px #3b82f6;
+        animation: scan-move 0.6s linear infinite;
+        z-index: 25;
+    }
+    @keyframes scan-move { 0% { top: 0%; } 100% { top: 100%; } }
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+    #face-guideline {
+        position: absolute; border: 2px solid rgba(255,255,255,0.8); border-radius: 20px;
+        pointer-events: none; transition: all 0.05s ease-out; z-index: 20;
+    }
+    
+    .video-container {
+        position: relative; border-radius: 24px; overflow: hidden;
+        background: #000; border: 1px solid rgba(255,255,255,0.1);
+    }
+</style>
+{% endblock %}
 
-    <style>
-        body {
-            background: radial-gradient(circle at 50% -20%, #1e293b, #020617);
-            min-height: 100vh;
-            perspective: 1000px;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fade-in { animation: fadeInUp 0.5s ease-out forwards; }
-
-        .glass-nav {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .nav-link {
-            position: relative;
-            padding: 0.5rem 1rem;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.875rem;
-            font-weight: 600;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .nav-link.active { color: #59adff; }
-        .nav-link.active::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #59adff, transparent);
-            box-shadow: 0 -2px 10px #59adff;
-        }
-
-        .blue-glass {
-            background: rgba(89, 173, 255, 0.05);
-            border-radius: 24px;
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(89, 173, 255, 0.15);
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        .hover-lift:hover {
-            transform: translateY(-3px);
-            border-color: rgba(89, 173, 255, 0.4);
-            background: rgba(89, 173, 255, 0.1);
-        }
-
-        .scan-line {
-            height: 4px;
-            background: linear-gradient(90deg, transparent, #59adff, transparent);
-            filter: drop-shadow(0 0 10px #59adff);
-            animation: scanMove 2.5s ease-in-out infinite;
-        }
-
-        @keyframes scanMove {
-            0% { top: 0%; opacity: 0; }
-            20% { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
-        }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(89, 173, 255, 0.2); border-radius: 10px; }
-    </style>
-</head>
-<body class="text-slate-100 font-sans antialiased overflow-x-hidden">
-
-    <nav class="glass-nav sticky top-0 z-50 h-20 px-8 flex items-center justify-between">
-        <div class="flex items-center gap-10">
-            <div class="flex items-center gap-3 group cursor-default">
-                <div class="w-10 h-10 bg-gradient-to-br from-[#59adff] to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:rotate-12 transition-transform">
-                    <span class="text-white text-xl">📷</span>
+{% block content %}
+<main class="max-w-7xl mx-auto p-6 flex items-center justify-center min-h-[calc(100vh-100px)]">
+    <div class="w-full grid lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-8 relative">
+            <div class="video-container aspect-video shadow-2xl">
+                <div class="absolute top-5 left-5 z-50 bg-black/60 backdrop-blur-md p-3 px-4 rounded-xl flex items-center gap-3 border border-white/10">
+                    <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                    <span id="status-text" class="text-white font-bold text-[10px] tracking-widest uppercase">System Active</span>
                 </div>
-                <h1 class="text-xl font-bold tracking-tight">Absensi<span class="text-[#59adff]">Pro</span></h1>
-            </div>
 
-            <div class="hidden md:flex items-center gap-2">
-                <a href="/" class="nav-link active">Scanner</a>
-                <a href="/riwayat" class="nav-link">Riwayat</a>
-                {% if role == 'admin' %}
-                <a href="/tambah_wajah" class="ml-4 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold hover:bg-amber-500 hover:text-black transition-all">+ WAJAH</a>
-                {% endif %}
-            </div>
-        </div>
-        <a href="/logout" class="text-sm font-semibold text-slate-400 hover:text-red-400 border-l border-white/10 pl-6 ml-2 transition-colors">Keluar</a>
-    </nav>
-
-    <main class="max-w-7xl mx-auto p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-100px)]">
-        
-        <div class="lg:col-span-7 flex flex-col items-center justify-center animate-fade-in">
-            <div id="video-container" class="blue-glass relative w-full aspect-video overflow-hidden hover-lift border-white/10 shadow-2xl">
-                <div id="scan-line" class="absolute left-0 right-0 z-20 hidden scan-line"></div>
-                <video id="input_video" autoplay muted playsinline class="w-full h-full object-cover"></video>
-                <canvas id="output_canvas" class="absolute inset-0 z-10"></canvas>
-            </div>
-
-            <div class="mt-8 flex flex-col items-center gap-4 w-full">
-                <div id="result" class="blue-glass px-12 py-5 text-xl font-bold min-w-[380px] text-center tracking-wider border-blue-500/30 shadow-[0_0_30px_rgba(89,173,255,0.1)]">
-                    MENUNGGU WAJAH...
-                </div>
-                <div id="info-detail" class="opacity-0 transition-all duration-500 px-6 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-bold tracking-wide">
-                    -
-                </div>
-            </div>
-        </div>
-
-        <div class="lg:col-span-5 flex flex-col space-y-4 animate-fade-in" style="animation-delay: 0.2s;">
-            <div class="blue-glass p-5 border-white/10 flex justify-between items-center shadow-lg">
-                <div>
-                    <h3 class="font-black text-xs uppercase tracking-[0.3em] text-slate-500">Monitoring Log</h3>
-                    <p class="text-sm text-slate-300 font-semibold">Kehadiran Hari Ini</p>
-                </div>
-                <div class="text-right">
-                    <span id="log-count" class="text-3xl font-black text-[#59adff]">0</span>
-                    <span class="text-[10px] block text-slate-500 font-bold uppercase tracking-widest">Total Kehadiran</span>
-                </div>
-            </div>
-            
-            <div id="log-list" class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-                </div>
-        </div>
-    </main>
-
-    <canvas id="capture_canvas" width="640" height="480" class="hidden"></canvas>
-
-    <script>
-        const videoElement = document.getElementById('input_video');
-        const scanLine = document.getElementById('scan-line');
-        const infoDetail = document.getElementById('info-detail');
-        const resultDiv = document.getElementById('result');
-        const logListDiv = document.getElementById('log-list');
-        const logCount = document.getElementById('log-count');
-
-        const successSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'); 
-
-        let faceStartTime = null;
-        let isProcessing = false;
-        const SCAN_DURATION = 1.0;
-
-        const faceDetection = new FaceDetection({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
-        });
-
-        faceDetection.setOptions({ model: 'short', minDetectionConfidence: 0.6 });
-
-        faceDetection.onResults((results) => {
-            if (isProcessing) return;
-            if (results.detections && results.detections.length > 0) {
-                if (!faceStartTime) {
-                    faceStartTime = Date.now();
-                    scanLine.classList.remove('hidden');
-                }
-                const elapsed = (Date.now() - faceStartTime) / 1000;
-                const percent = Math.min(Math.floor((elapsed/SCAN_DURATION)*100), 100);
-                resultDiv.innerText = `SCANNING: ${percent}%`;
+                <video id="video" autoplay muted playsinline class="w-full h-full object-cover scale-x-[-1]"></video>
                 
-                if (elapsed >= SCAN_DURATION) {
-                    faceStartTime = null;
-                    executeAbsensi();
-                }
-            } else {
-                faceStartTime = null;
-                scanLine.classList.add('hidden');
-                resultDiv.innerText = "MENUNGGU WAJAH...";
-            }
-        });
+                <div id="face-guideline" class="hidden">
+                    <div class="laser-line"></div>
+                </div>
+            </div>
+        </div>
 
-        new Camera(videoElement, {
-            onFrame: async () => { await faceDetection.send({image: videoElement}); },
-            width: 1280, height: 720
-        }).start();
+        <div class="lg:col-span-4 flex flex-col">
+            <div class="blue-glass p-5 border-white/10 flex-1 flex flex-col max-h-[500px]">
+                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">Daftar Hadir</h3>
+                <div id="today-logs" class="space-y-2 overflow-y-auto flex-1 pr-2 custom-scrollbar"></div>
+            </div>
+        </div>
+    </div>
+</main>
 
-        function executeAbsensi() {
-            isProcessing = true;
-            resultDiv.innerText = "VERIFIKASI...";
-            const captureCanvas = document.getElementById('capture_canvas');
-            captureCanvas.getContext('2d').drawImage(videoElement, 0, 0, 640, 480);
+<canvas id="canvas" class="hidden"></canvas>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const video = document.getElementById('video');
+    const guideline = document.getElementById('face-guideline');
+    const statusText = document.getElementById('status-text');
+    const canvas = document.getElementById('canvas');
+
+    let isProcessing = false;
+
+    // FUNGSI SUARA OTOMATIS (Tanpa Klik)
+    function speak(text) {
+        if ('speechSynthesis' in window) {
+            // Batalkan suara yang sedang berjalan agar tidak antre
+            window.speechSynthesis.cancel();
             
-            fetch('/process_image', {
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'id-ID';
+            msg.rate = 1.1; // Sedikit lebih cepat agar responsif
+            msg.pitch = 1.0;
+            window.speechSynthesis.speak(msg);
+        }
+    }
+
+    const faceDetection = new FaceDetection({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
+    });
+
+    faceDetection.setOptions({ model: 'short', minDetectionConfidence: 0.75 });
+
+    faceDetection.onResults((results) => {
+        if (results.detections.length > 0) {
+            const det = results.detections[0].boundingBox;
+            const vW = video.offsetWidth;
+            const vH = video.offsetHeight;
+
+            guideline.classList.remove('hidden');
+            guideline.style.width = (det.width * vW) + 'px';
+            guideline.style.height = (det.height * vH) + 'px';
+            guideline.style.left = (vW - (det.xCenter * vW) - (det.width * vW / 2)) + 'px';
+            guideline.style.top = (det.yCenter * vH - det.height * vH / 2) + 'px';
+
+            if (!isProcessing) processScan();
+        } else {
+            guideline.classList.add('hidden');
+        }
+    });
+
+    async function processScan() {
+        isProcessing = true;
+        updateStatus("Verifying...", "bg-blue-500");
+        
+        canvas.width = 640;
+        canvas.height = 480;
+        const ctx = canvas.getContext('2d');
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+        ctx.restore();
+        
+        const base64 = canvas.toDataURL('image/jpeg', 0.7);
+
+        try {
+            const res = await fetch('/process_image', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: captureCanvas.toDataURL('image/jpeg') })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if(data.status === 'success' || data.status === 'already_present') {
-                    successSound.play();
-                    infoDetail.innerText = `${data.nama.toUpperCase()} BERHASIL ABSEN`;
-                    infoDetail.classList.add('opacity-100');
-                    resultDiv.innerText = data.status === 'success' ? "BERHASIL" : "SUDAH ABSEN";
-                    updateLog(); 
-                    setTimeout(() => {
-                        isProcessing = false;
-                        infoDetail.classList.remove('opacity-100');
-                    }, 3000);
-                } else {
-                    resultDiv.innerText = "TIDAK DIKENAL";
-                    setTimeout(() => { isProcessing = false; }, 2000);
-                }
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({image: base64})
             });
-        }
+            const data = await res.json();
 
-        function updateLog() {
-            fetch('/api/today_log').then(res => res.json()).then(data => {
-                logCount.innerText = data.length;
-                logListDiv.innerHTML = data.reverse().map(item => `
-                    <div class="blue-glass p-4 flex justify-between items-center hover-lift animate-fade-in border-white/5">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center font-bold text-[#59adff] border border-blue-500/10">
-                                ${item.nama.charAt(0)}
-                            </div>
-                            <div>
-                                <p class="font-bold text-sm text-white">${item.nama}</p>
-                                <p class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Verified</p>
-                            </div>
-                        </div>
-                        <span class="text-[11px] font-mono text-blue-400 bg-blue-400/10 px-2 py-1 rounded-md">${item.waktu}</span>
-                    </div>
-                `).join('');
-            });
+            if (data.status === 'success') {
+                updateStatus(data.nama.toUpperCase(), "bg-emerald-500");
+                speak("Absensi berhasil. Terima kasih " + data.nama);
+                loadLogs();
+                setTimeout(() => { isProcessing = false; }, 3000); 
+            } else if (data.status === 'already_present') {
+                updateStatus("DONE", "bg-amber-500");
+                speak("Anda sudah absen hari ini.");
+                setTimeout(() => { isProcessing = false; }, 2000);
+            } else {
+                updateStatus("UNKNOWN", "bg-red-500");
+                speak("Wajah tidak dikenali.");
+                setTimeout(() => { isProcessing = false; }, 1200); 
+            }
+        } catch (e) {
+            isProcessing = false;
         }
+    }
 
-        updateLog();
-    </script>
-</body>
-</html>
+    function updateStatus(txt, cls) {
+        statusText.innerText = txt;
+        document.getElementById('status-dot').className = `w-2.5 h-2.5 rounded-full ${cls}`;
+    }
+
+    const camera = new Camera(video, {
+        onFrame: async () => { await faceDetection.send({image: video}); },
+        width: 1280, height: 720
+    });
+    camera.start();
+
+    async function loadLogs() {
+        const r = await fetch('/api/today_log');
+        const d = await r.json();
+        document.getElementById('today-logs').innerHTML = d.map(l => `
+            <div class="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between">
+                <div>
+                    <p class="text-white font-bold text-xs uppercase">${l.nama}</p>
+                    <p class="text-[9px] text-slate-400 font-bold">${l.waktu}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+    loadLogs();
+</script>
+{% endblock %}

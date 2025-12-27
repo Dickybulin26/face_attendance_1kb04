@@ -1,84 +1,110 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Wajah - AbsensiPro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { background: radial-gradient(circle at 50% -20%, #1e293b, #020617); min-height: 100vh; }
-        .glass-nav { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px) saturate(180%); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
-        .nav-link { position: relative; padding: 0.5rem 1rem; color: rgba(255, 255, 255, 0.6); font-size: 0.875rem; font-weight: 600; transition: all 0.3s ease; }
-        .nav-link.active { color: #59adff; }
-        .blue-glass { background: rgba(89, 173, 255, 0.05); border-radius: 24px; backdrop-filter: blur(12px); border: 1px solid rgba(89, 173, 255, 0.15); }
-    </style>
-</head>
-<body class="text-slate-100 font-sans antialiased">
+{% extends "base.html" %}
 
-    <nav class="glass-nav sticky top-0 z-50 h-20 px-8 flex items-center justify-between">
-        <div class="flex items-center gap-10">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-[#59adff] to-blue-600 rounded-xl flex items-center justify-center">
-                    <span class="text-white text-xl">📷</span>
-                </div>
-                <h1 class="text-xl font-bold tracking-tight">Absensi<span class="text-[#59adff]">Pro</span></h1>
+{% block title %}Pendaftaran - AbsensiPro{% endblock %}
+
+{% block extra_style %}
+    .animate-fade-in { animation: fadeInUp 0.5s ease-out forwards; }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    input:focus {
+        box-shadow: 0 0 20px rgba(89, 173, 255, 0.1);
+    }
+{% endblock %}
+
+{% block content %}
+<main class="max-w-4xl mx-auto p-8 animate-fade-in">
+    <div class="blue-glass p-10 border-white/10 shadow-2xl">
+        <div class="flex items-center gap-4 mb-8">
+            <div class="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center border border-amber-500/30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
             </div>
-            <div class="flex items-center gap-2">
-                <a href="/" class="nav-link">Scanner</a>
-                <a href="/riwayat" class="nav-link">Riwayat</a>
-                <a href="/tambah_wajah" class="ml-4 px-4 py-2 rounded-xl bg-amber-500 text-black text-xs font-bold transition-all">Pendaftaran</a>
+            <div>
+                <h2 class="text-2xl font-bold text-white">Daftarkan <span class="text-[#59adff]">User Baru</span></h2>
+                <p class="text-slate-400 text-sm">Pastikan wajah terlihat jelas dan pencahayaan cukup.</p>
             </div>
         </div>
-        <a href="/logout" class="text-sm font-semibold text-slate-400 hover:text-red-400 border-l border-white/10 pl-6 ml-2 transition-colors">Keluar</a>
-    </nav>
 
-    <main class="max-w-4xl mx-auto p-8 animate-fade-in">
-        <div class="blue-glass p-10 border-white/10 shadow-2xl">
-            <h2 class="text-2xl font-bold mb-8">Daftarkan <span class="text-[#59adff]">User Baru</span></h2>
-            <form id="addFaceForm" class="space-y-6">
-                <div>
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Nama Lengkap</label>
-                    <input type="text" id="nama" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-[#59adff] transition-all text-white font-medium" placeholder="Contoh: John Doe">
+        <form id="addFaceForm" class="space-y-6">
+            <div>
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">Nama Lengkap</label>
+                <input type="text" id="nama" required 
+                    class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-[#59adff] transition-all text-white font-medium placeholder:text-slate-600" 
+                    placeholder="Masukkan nama lengkap karyawan">
+            </div>
+            
+            <div class="relative aspect-video rounded-2xl overflow-hidden bg-black/40 border border-white/10 shadow-inner">
+                <video id="video" autoplay muted playsinline class="w-full h-full object-cover"></video>
+                <div class="absolute inset-0 border-[20px] border-black/20 pointer-events-none flex items-center justify-center">
+                    <div class="w-64 h-64 border-2 border-white/10 border-dashed rounded-full"></div>
                 </div>
-                
-                <div class="relative aspect-video rounded-2xl overflow-hidden bg-black/40 border border-white/10">
-                    <video id="video" autoplay muted playsinline class="w-full h-full object-cover"></video>
-                    <div class="absolute inset-0 border-[20px] border-black/20 pointer-events-none"></div>
-                </div>
+            </div>
 
-                <button type="button" onclick="captureFace()" id="btnCapture" class="w-full bg-[#59adff] text-slate-900 font-black py-5 rounded-2xl hover:scale-[1.01] transition-all shadow-lg shadow-blue-500/20 uppercase tracking-widest text-sm">Ambil Foto & Simpan</button>
-            </form>
-        </div>
-    </main>
+            <button type="button" onclick="captureFace()" id="btnCapture" 
+                class="w-full bg-gradient-to-r from-[#59adff] to-blue-600 text-slate-900 font-black py-5 rounded-2xl hover:scale-[1.01] active:scale-[0.98] transition-all shadow-lg shadow-blue-500/20 uppercase tracking-widest text-sm">
+                Ambil Foto & Simpan
+            </button>
+        </form>
+    </div>
+</main>
 
-    <canvas id="canvas" width="640" height="480" class="hidden"></canvas>
+<canvas id="canvas" width="640" height="480" class="hidden"></canvas>
+{% endblock %}
 
-    <script>
-        const video = document.getElementById('video');
-        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => video.srcObject = stream);
+{% block extra_scripts %}
+<script>
+    const video = document.getElementById('video');
+    const btn = document.getElementById('btnCapture');
 
-        function captureFace() {
-            const btn = document.getElementById('btnCapture');
-            const nama = document.getElementById('nama').value;
-            if(!nama) return alert('Isi nama dulu!');
+    // Mengaktifkan Kamera
+    navigator.mediaDevices.getUserMedia({ 
+        video: { width: 1280, height: 720 } 
+    }).then(stream => {
+        video.srcObject = stream;
+    }).catch(err => {
+        console.error("Gagal akses kamera:", err);
+        alert("Mohon izinkan akses kamera untuk melakukan pendaftaran.");
+    });
 
-            btn.innerText = "MEMPROSES...";
-            btn.disabled = true;
-
-            const canvas = document.getElementById('canvas');
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            const dataUrl = canvas.toDataURL('image/jpeg');
-
-            fetch('/register_face', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nama: nama, image: dataUrl })
-            }).then(r => r.json()).then(data => {
-                alert(data.message);
-                window.location.href = '/';
-            });
+    function captureFace() {
+        const nama = document.getElementById('nama').value;
+        if(!nama) {
+            alert('Silakan masukkan nama lengkap terlebih dahulu!');
+            return;
         }
-    </script>
-</body>
-</html>
+
+        // Feedback Visual
+        btn.innerText = "SEDANG MENGIRIM DATA...";
+        btn.classList.replace('from-[#59adff]', 'from-slate-700');
+        btn.disabled = true;
+
+        const canvas = document.getElementById('canvas');
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+        fetch('/register_face', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nama: nama, image: dataUrl })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.status === 'success') {
+                alert('Pendaftaran Berhasil: ' + data.message);
+                window.location.href = '/daftar_user';
+            } else {
+                alert('Gagal: ' + data.message);
+                btn.innerText = "COBA LAGI";
+                btn.disabled = false;
+                btn.classList.replace('from-slate-700', 'from-[#59adff]');
+            }
+        })
+        .catch(err => {
+            alert('Terjadi kesalahan koneksi.');
+            btn.disabled = false;
+            btn.innerText = "AMBIL FOTO & SIMPAN";
+        });
+    }
+</script>
+{% endblock %}
