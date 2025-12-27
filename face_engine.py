@@ -1,167 +1,112 @@
 import face_recognition
 import cv2
 import numpy as np
-import os
 import base64
-
+import os
 
 class FaceEngine:
     def __init__(self, known_faces_dir='known_faces'):
-        """
-        Initialize the FaceEngine object.
-
-        Parameters
-        ----------
-        known_faces_dir : str, optional
-            The directory where known faces are stored, by default 'known_faces'.
-        """
-
         self.known_faces_dir = known_faces_dir
-        self.known_face_encodings = []
-        self.known_face_names = []
+        self.known_encodings = []
+        self.known_names = []
+        # Memanggil fungsi load saat pertama kali dijalankan
+        self.load_known_faces()
 
-        # Ensure directory exists
+    def load_known_faces(self):
+        """Memuat ulang database wajah dari folder ke memori"""
+        self.known_encodings = []
+        self.known_names = []
+        
+        # Buat folder jika belum ada
         if not os.path.exists(self.known_faces_dir):
             os.makedirs(self.known_faces_dir)
-
-        self.reload_faces()
-
-    def reload_faces(self):
-        """
-        Reload all known faces from the directory.
-
-        Returns
-        -------
-        int
-            The number of known faces loaded.
-        """
-        self.known_face_encodings = []
-        self.known_face_names = []
-
-        if not os.path.exists(self.known_faces_dir):
-            return 0
-
+            
+        print("🔄 Sedang memuat ulang database wajah...")
+        
         for filename in os.listdir(self.known_faces_dir):
             if filename.endswith((".jpg", ".png", ".jpeg")):
                 path = os.path.join(self.known_faces_dir, filename)
                 try:
-                    img = face_recognition.load_image_file(path)
-                    enc = face_recognition.face_encodings(img)
-                    if enc:
-                        self.known_face_encodings.append(enc[0])
-                        # Format nama agar rapi saat disebut TTS (ganti underscore ke spasi)
-                        clean_name = os.path.splitext(
-                            filename)[0].replace("_", " ")
-                        self.known_face_names.append(clean_name)
+                    image = face_recognition.load_image_file(path)
+                    encoding = face_recognition.face_encodings(image)
+                    if encoding:
+                        self.known_encodings.append(encoding[0])
+                        self.known_names.append(os.path.splitext(filename)[0])
                 except Exception as e:
-                    print(f"Error loading {filename}: {e}")
-
-        print(f"🔄 Database wajah dimuat: {len(self.known_face_names)} orang.")
-        return len(self.known_face_names)
+                    print(f"⚠️ Gagal memuat {filename}: {e}")
+        
+        print(f"✅ Database siap! Total user: {len(self.known_names)}")
 
     def process_base64_image(self, base64_string):
-        """
-        Process a base64 encoded image string.
+        """Mengubah string dari webcam menjadi gambar OpenCV"""
+        if "," in base64_string:
+            base64_string = base64_string.split(",")[1]
+        
+        img_data = base64.b64decode(base64_string)
+        nparr = np.frombuffer(img_data, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        # Optimasi Gambar: Cerahkan sedikit agar deteksi lebih mudah
+        img = cv2.convertScaleAbs(img, alpha=1.1, beta=10)
+        
+        return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        Parameters
-        ----------
-        base64_string : str
-            The base64 encoded image string.
-
-        Returns
-        -------
-        img : numpy.ndarray
-            The decoded image as a numpy array, or None if there is an error.
-        """
-        try:
-            if "," in base64_string:
-                _, encoded = base64_string.split(",", 1)
-            else:
-                encoded = base64_string
-
-            nparr = np.frombuffer(base64.b64decode(encoded), np.uint8)
-            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-            return img
-        except Exception as e:
-            print(f"Error processing base64 image: {e}")
-            return None
-
-    def recognize_face(self, img, tolerance=0.5):
-        """
-        Recognize a face in an image.
-
-        Parameters
-        ----------
-        img : numpy.ndarray
-            The image to recognize, as a numpy array.
-        tolerance : float, optional
-            The tolerance for face recognition, by default 0.5.
-
-        Returns
-        -------
-        status : str
-            The status of the recognition, can be "success", "error", or None.
-        message : str
-            A message indicating the result of the recognition.
-        name : str or None
-            The name of the recognized face, or None if not recognized.
-        """
-        if img is None:
-            return "error", "Gagal memproses gambar.", None
-
-        # Konversi ke RGB untuk face_recognition
-        rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        # Deteksi Wajah
+    def recognize_face(self, rgb_img):
+        """Proses Absensi (Scan)"""
+        # Upsample 1x cukup untuk scanning cepat
         face_locations = face_recognition.face_locations(rgb_img)
-        encs = face_recognition.face_encodings(rgb_img, face_locations)
+        face_encodings = face_recognition.face_encodings(rgb_img, face_locations)
 
-        if not encs:
-            return "error", "Wajah tidak terdeteksi!", None
+        if not face_encodings:
+            return "error", "Wajah tidak terdeteksi", None
 
-        # Komparasi Wajah (Check against all known faces)
-        # We only check the first face detected for attendance
-        matches = face_recognition.compare_faces(
-            self.known_face_encodings, encs[0], tolerance=tolerance)
+        for face_encoding in face_encodings:
+            # Tolerance 0.5 agar akurat
+            matches = face_recognition.compare_faces(self.known_encodings, face_encoding, tolerance=0.5)
+            face_distances = face_recognition.face_distance(self.known_encodings, face_encoding)
+            
+            if len(face_distances) > 0:
+                best_match_index = np.argmin(face_distances)
+                if matches[best_match_index]:
+                    nama = self.known_names[best_match_index]
+                    return "success", "Wajah dikenali", nama
 
-        if True in matches:
-            first_match_index = matches.index(True)
-            name = self.known_face_names[first_match_index]
-            return "success", f"Wajah dikenali: {name}", name
+        return "error", "Wajah tidak dikenal", None
 
-        return "error", "Wajah tidak dikenal.", None
-
-    def register_face(self, name, base64_image):
-        """
-        Register a face with the given name and base64 image.
-
-        Parameters
-        ----------
-        name : str
-            The name of the face to register.
-        base64_image : str
-            The base64 encoded image of the face to register.
-
-        Returns
-        -------
-        bool
-            True if the face is successfully registered, False otherwise.
-        str
-            A message indicating the result of the registration.
-        """
+    def register_face(self, nama, base64_image):
+        """Proses Pendaftaran Wajah Baru (Lebih Teliti)"""
         try:
-            filename = name.lower().replace(" ", "_")
-            filepath = os.path.join(self.known_faces_dir, f"{filename}.jpg")
+            img_rgb = self.process_base64_image(base64_image)
+            
+            # --- FITUR ANTI GAGAL DETEKSI ---
+            # number_of_times_to_upsample=2 artinya zoom in 2x secara digital
+            # Ini mengatasi masalah webcam yang resolusinya rendah/pecah
+            face_locations = face_recognition.face_locations(img_rgb, number_of_times_to_upsample=2)
+            
+            if not face_locations:
+                # Coba sekali lagi dengan kontras tinggi jika gagal
+                img_enhanced = cv2.convertScaleAbs(img_rgb, alpha=1.5, beta=20)
+                face_locations = face_recognition.face_locations(img_enhanced, number_of_times_to_upsample=2)
+                
+                if not face_locations:
+                    return False, "Wajah tidak ditemukan. Coba mendekat ke kamera."
 
-            if "," in base64_image:
-                data = base64_image.split(",", 1)[1]
-            else:
-                data = base64_image
+            # Ambil encoding
+            face_encodings = face_recognition.face_encodings(img_rgb, face_locations)
+            
+            if not face_encodings:
+                return False, "Wajah terdeteksi tapi buram. Pastikan cahaya cukup."
 
-            with open(filepath, "wb") as f:
-                f.write(base64.b64decode(data))
+            # Simpan File
+            img_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
+            file_path = os.path.join(self.known_faces_dir, f"{nama}.jpg")
+            cv2.imwrite(file_path, img_bgr)
+            
+            # --- PENTING: RELOAD AGAR TIDAK ERROR ---
+            self.load_known_faces() 
+            
+            return True, f"Berhasil! Wajah {nama} disimpan."
 
-            self.reload_faces()
-            return True, f"Wajah {filename} berhasil didaftarkan!"
         except Exception as e:
-            return False, f"Gagal menyimpan wajah: {str(e)}"
+            print(f"Error Register: {str(e)}")
+            return False, f"System Error: {str(e)}"

@@ -35,7 +35,7 @@
             </div>
             
             <div class="relative aspect-video rounded-2xl overflow-hidden bg-black/40 border border-white/10 shadow-inner">
-                <video id="video" autoplay muted playsinline class="w-full h-full object-cover"></video>
+                <video id="video" autoplay muted playsinline class="w-full h-full object-cover scale-x-[-1]"></video>
                 <div class="absolute inset-0 border-[20px] border-black/20 pointer-events-none flex items-center justify-center">
                     <div class="w-64 h-64 border-2 border-white/10 border-dashed rounded-full"></div>
                 </div>
@@ -49,17 +49,22 @@
     </div>
 </main>
 
-<canvas id="canvas" width="640" height="480" class="hidden"></canvas>
+<canvas id="canvas" class="hidden"></canvas>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
     const video = document.getElementById('video');
     const btn = document.getElementById('btnCapture');
+    const canvas = document.getElementById('canvas');
 
-    // Mengaktifkan Kamera
+    // Mengaktifkan Kamera dengan Resolusi HD
     navigator.mediaDevices.getUserMedia({ 
-        video: { width: 1280, height: 720 } 
+        video: { 
+            width: { ideal: 1280 }, 
+            height: { ideal: 720 },
+            facingMode: "user"
+        } 
     }).then(stream => {
         video.srcObject = stream;
     }).catch(err => {
@@ -68,20 +73,33 @@
     });
 
     function captureFace() {
-        const nama = document.getElementById('nama').value;
+        const namaInput = document.getElementById('nama');
+        const nama = namaInput.value.trim();
+        
         if(!nama) {
             alert('Silakan masukkan nama lengkap terlebih dahulu!');
             return;
         }
 
         // Feedback Visual
-        btn.innerText = "SEDANG MENGIRIM DATA...";
-        btn.classList.replace('from-[#59adff]', 'from-slate-700');
+        btn.innerText = "SEDANG MENGANAlISIS & MENGIRIM...";
         btn.disabled = true;
+        btn.style.opacity = "0.7";
 
-        const canvas = document.getElementById('canvas');
-        canvas.getContext('2d').drawImage(video, 0, 0);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        const ctx = canvas.getContext('2d');
+        
+        // --- FIX RESOLUSI: Mengikuti ukuran asli video ---
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        // --- FIX MIRROR: Agar hasil foto tidak terbalik ---
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        // Mengambil data gambar dengan kualitas tinggi (0.95)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
 
         fetch('/register_face', {
             method: 'POST',
@@ -95,16 +113,19 @@
                 window.location.href = '/daftar_user';
             } else {
                 alert('Gagal: ' + data.message);
-                btn.innerText = "COBA LAGI";
-                btn.disabled = false;
-                btn.classList.replace('from-slate-700', 'from-[#59adff]');
+                resetButton();
             }
         })
         .catch(err => {
-            alert('Terjadi kesalahan koneksi.');
-            btn.disabled = false;
-            btn.innerText = "AMBIL FOTO & SIMPAN";
+            alert('Terjadi kesalahan koneksi ke server.');
+            resetButton();
         });
+    }
+
+    function resetButton() {
+        btn.innerText = "AMBIL FOTO & SIMPAN";
+        btn.disabled = false;
+        btn.style.opacity = "1";
     }
 </script>
 {% endblock %}

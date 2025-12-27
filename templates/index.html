@@ -133,7 +133,7 @@
                 loadLogs();
                 setTimeout(() => { isProcessing = false; }, 3000); 
             } else if (data.status === 'already_present') {
-                updateStatus("DONE", "bg-amber-500");
+                updateStatus("DONE", "bg-green-500");
                 speak("Anda sudah absen hari ini.");
                 setTimeout(() => { isProcessing = false; }, 2000);
             } else {

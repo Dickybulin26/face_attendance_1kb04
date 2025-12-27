@@ -7,8 +7,6 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>">
-
 <style>
     :root {
         --accent: #3b82f6;
@@ -44,10 +42,41 @@
     .fc .fc-button:hover { background: rgba(59, 130, 246, 0.1) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
     .fc .fc-button-active { background: var(--accent) !important; border-color: var(--accent) !important; color: white !important; }
 
+    /* --- FITUR: HIGHLIGHT ANGKA SAJA UNTUK HARI INI --- */
+    .fc .fc-daygrid-day.fc-day-today {
+        background-color: transparent !important; /* Hapus background biru bawaan */
+    }
+
+    .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+        color: #59adff !important; /* Ubah warna angka saja */
+        font-weight: 800 !important;
+        font-size: 1.1rem;
+        position: relative;
+    }
+
+    .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        background-color: #59adff;
+        border-radius: 50%;
+    }
+
+    .fc .fc-daygrid-day-number {
+        color: #94a3b8; /* Slate-400 untuk tanggal lain */
+        text-decoration: none !important;
+    }
+
     /* 3. MODERN CHIPS & ICONS */
+    .fc-event { background: transparent !important; border: none !important; } /* Hilangkan background default event */
+    
     .event-pill {
         display: flex; align-items: center; justify-content: center; gap: 6px;
-        padding: 5px 10px; border-radius: 10px; font-size: 0.7rem; font-weight: 800;
+        padding: 4px 8px; border-radius: 10px; font-size: 0.65rem; font-weight: 800;
         transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         cursor: pointer;
     }
@@ -74,7 +103,7 @@
     /* 5. ELEVATED TOOLTIP */
     #tooltip {
         position: absolute; display: none; z-index: 1000;
-        background: rgba(8, 10, 15, 0.9); backdrop-filter: blur(20px);
+        background: rgba(8, 10, 15, 0.95); backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         padding: 16px; border-radius: 20px;
         box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
@@ -145,7 +174,7 @@
 {% block extra_scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        lucide.createIcons(); // Inisialisasi Lucide Icons
+        lucide.createIcons();
         
         const calendarEl = document.getElementById('calendar');
         const tooltip = document.getElementById('tooltip');
@@ -174,7 +203,6 @@
                 return { html: html };
             },
 
-            // Render ulang icon Lucide setiap kali kalender berganti bulan
             eventDidMount: function() { lucide.createIcons(); },
 
             eventMouseEnter: function(info) {
@@ -198,7 +226,7 @@
                         <i data-lucide="clock" class="w-3 h-3"></i> Terverifikasi: ${props.waktu}</div>`;
                 }
                 
-                lucide.createIcons(); // Render ulang icon dalam tooltip
+                lucide.createIcons();
 
                 const rect = info.el.getBoundingClientRect();
                 tooltip.style.display = 'block';
