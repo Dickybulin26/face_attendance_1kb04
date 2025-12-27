@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AbsensiPro - Flash Border AI</title>
+    <title>AbsensiPro - Fast Automatic AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
 
@@ -32,44 +33,47 @@
             border-bottom: 1px solid var(--glass-border);
         }
 
-        .nav-links { display: flex; align-items: center; gap: 25px; }
-        .nav-links a { color: var(--text-main); text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
-        .nav-links a.admin-link { color: var(--warning); font-weight: 600; }
+        .nav-links a { color: var(--text-main); text-decoration: none; margin-right: 20px; font-size: 0.9rem; }
+        .admin-link { color: var(--warning) !important; font-weight: 600; }
 
-        /* --- CAMERA CONTAINER & FLASH BORDER --- */
         #video-container { 
             width: 100%; max-width: 600px; aspect-ratio: 4/3;
             border-radius: 24px; overflow: hidden; 
             box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 4px solid var(--glass-border);
-            background: #000; position: relative;
-            transition: border-color 0.3s ease;
+            background: #000; position: relative; transition: all 0.3s ease;
         }
 
-        /* Border Hijau saat Berhasil */
         #video-container.success-flash {
             border-color: var(--success);
-            box-shadow: 0 0 30px rgba(46, 204, 113, 0.6);
+            box-shadow: 0 0 40px rgba(46, 204, 113, 0.4);
         }
 
         video { width: 100%; height: 100%; object-fit: cover; }
-        #output_canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
 
         .scan-line {
             position: absolute; top: 0; left: 0; width: 100%; height: 2px;
             background: var(--success); box-shadow: 0 0 20px var(--success);
             animation: scan 1s infinite linear; z-index: 6; display: none;
         }
-
         @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
 
+        .info-detail {
+            margin-top: 15px; font-size: 1rem; color: var(--success);
+            background: rgba(46, 204, 113, 0.1); padding: 8px 20px;
+            border-radius: 12px; border: 1px solid rgba(46, 204, 113, 0.2);
+            opacity: 0; transition: 0.3s; font-weight: 500;
+        }
+        .info-detail.show { opacity: 1; }
+
         .status-msg { 
-            margin-top: 30px; font-size: 1.1rem; font-weight: 600; padding: 15px 40px;
+            margin-top: 20px; font-size: 1.1rem; font-weight: 600; padding: 12px 40px;
             border-radius: 50px; background: var(--glass-bg); border: 1px solid var(--glass-border);
-            min-width: 350px; text-align: center; transition: 0.3s;
+            min-width: 300px; text-align: center;
         }
 
-        .right-panel { flex: 0.6; padding: 30px; background: rgba(25, 25, 25, 0.5); backdrop-filter: blur(5px); overflow-y: auto; border-left: 1px solid var(--glass-border); }
-        .log-card { background: var(--glass-bg); padding: 16px 20px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--glass-border); display: flex; justify-content: space-between; }
+        .right-panel { flex: 0.6; padding: 30px; background: rgba(25, 25, 25, 0.5); overflow-y: auto; border-left: 1px solid var(--glass-border); }
+        .log-card { background: var(--glass-bg); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--glass-border); display: flex; justify-content: space-between; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -85,22 +89,26 @@
                 {% endif %}
             </div>
         </div>
-        <a href="/logout" style="color:var(--danger); text-decoration:none; font-weight:600; border:1px solid var(--danger); padding:5px 15px; border-radius:8px;">Logout</a>
+        <a href="/logout" style="color:var(--danger); text-decoration:none; font-weight:600; border:1px solid var(--danger); padding:5px 15px; border-radius:8px; font-size: 0.8rem;">Logout</a>
     </nav>
 
     <div class="container" style="display: flex; height: calc(100vh - 65px);">
-        <div class="left-panel" style="flex: 1.4; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div class="left-panel" style="flex: 1.4; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+            
             <div id="video-container">
-                <div class="scan-line" id="scan-line"></div>
-                <video id="input_video" autoplay muted></video>
+                <div id="scan-line" class="scan-line"></div>
+                <video id="input_video" autoplay muted playsinline></video>
                 <canvas id="output_canvas"></canvas>
             </div>
-            <div id="timer" style="margin-top: 15px; font-weight: 600; color: var(--warning); height: 24px;"></div>
+
+            <div id="info-detail" class="info-detail">User terdeteksi pada 00:00:00</div>
+
+            <div id="timer" style="margin-top: 10px; font-weight: 600; color: var(--warning); height: 20px;"></div>
             <div id="result" class="status-msg">Menunggu Deteksi Wajah...</div>
         </div>
 
         <div class="right-panel">
-            <h3>Log Hari Ini (<span id="log-count">0</span>)</h3>
+            <h3>Aktivitas Hari Ini (<span id="log-count">0</span>)</h3>
             <div id="log-list"></div>
         </div>
     </div>
@@ -110,17 +118,25 @@
     <script>
         const videoElement = document.getElementById('input_video');
         const canvasElement = document.getElementById('output_canvas');
-        const videoContainer = document.getElementById('video-container');
         const canvasCtx = canvasElement.getContext('2d');
+        const videoContainer = document.getElementById('video-container');
+        const scanLine = document.getElementById('scan-line');
+        const infoDetail = document.getElementById('info-detail');
         const resultDiv = document.getElementById('result');
         const logListDiv = document.getElementById('log-list');
-        const scanLine = document.getElementById('scan-line');
         const timerDiv = document.getElementById('timer');
+
+        // Sound Notification
+        const successSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'); 
 
         let faceStartTime = null;
         let isProcessing = false;
-        const SCAN_DURATION = 1.0; 
-        const COOLDOWN_DURATION = 3;
+        const SCAN_DURATION = 1.0; // Deteksi selama 1 detik
+
+        function playSuccessSound() {
+            successSound.currentTime = 0;
+            successSound.play().catch(e => console.log("Audio play blocked."));
+        }
 
         function speak(text) {
             window.speechSynthesis.cancel();
@@ -133,7 +149,10 @@
             locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
         });
 
-        faceDetection.setOptions({ model: 'short', minDetectionConfidence: 0.6 });
+        faceDetection.setOptions({
+            model: 'short',
+            minDetectionConfidence: 0.6
+        });
 
         faceDetection.onResults((results) => {
             if (isProcessing) {
@@ -145,8 +164,8 @@
             canvasElement.height = videoElement.clientHeight;
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            
-            if (results.detections.length > 0) {
+
+            if (results.detections && results.detections.length > 0) {
                 if (!faceStartTime) {
                     faceStartTime = Date.now();
                     scanLine.style.display = "block";
@@ -163,7 +182,8 @@
                     canvasCtx.lineWidth = 4;
                     canvasCtx.strokeRect(x, y, bbox.width * canvasElement.width, bbox.height * canvasElement.height);
                     
-                    resultDiv.innerText = `SCANNING: ${Math.min(Math.floor((elapsed/SCAN_DURATION)*100), 100)}%`;
+                    const percent = Math.min(Math.floor((elapsed/SCAN_DURATION)*100), 100);
+                    resultDiv.innerText = `SCANNING: ${percent}%`;
                 });
 
                 if (elapsed >= SCAN_DURATION) {
@@ -186,7 +206,8 @@
 
         function executeAbsensi() {
             isProcessing = true;
-            resultDiv.innerText = "MENGIDENTIFIKASI...";
+            resultDiv.innerText = "IDENTIFIKASI...";
+            scanLine.style.display = "none";
             
             const captureCanvas = document.getElementById('capture_canvas');
             captureCanvas.getContext('2d').drawImage(videoElement, 0, 0, 640, 480);
@@ -198,26 +219,28 @@
             })
             .then(r => r.json())
             .then(data => {
+                const waktu = new Date().toLocaleTimeString('id-ID');
+
                 if(data.status === 'success' || data.status === 'already_present') {
-                    // NYALAKAN BORDER HIJAU
+                    playSuccessSound();
                     videoContainer.classList.add('success-flash');
-                    
+                    infoDetail.innerText = `${data.nama.toUpperCase()} TELAH ABSEN PADA ${waktu}`;
+                    infoDetail.classList.add('show');
+
                     if(data.status === 'success') {
-                        resultDiv.innerText = "BERHASIL ABSEN";
+                        resultDiv.innerText = "BERHASIL";
                         speak(`Terima kasih ${data.nama}`);
                     } else {
                         resultDiv.innerText = "SUDAH ABSEN";
                         speak(`${data.nama} sudah absen`);
                     }
-                    
                     updateLog(); 
-                    startCooldown(COOLDOWN_DURATION);
+                    startCooldown(3);
                 } else {
-                    resultDiv.innerText = "WAJAH TIDAK DIKENAL";
+                    resultDiv.innerText = "TIDAK DIKENAL";
                     speak("Wajah tidak dikenal");
                     setTimeout(() => { isProcessing = false; }, 2000);
                 }
-                scanLine.style.display = "none";
             });
         }
 
@@ -229,8 +252,8 @@
                 if(count < 0) {
                     clearInterval(timer);
                     isProcessing = false;
-                    // MATIKAN BORDER HIJAU
                     videoContainer.classList.remove('success-flash');
+                    infoDetail.classList.remove('show');
                     timerDiv.innerText = "";
                     resultDiv.innerText = "Menunggu Deteksi Wajah...";
                 }
