@@ -3,265 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Riwayat Absensi - Dark Glassmorphism</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Riwayat - AbsensiPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #121212;
-            --panel-dark: #1e1e1e;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --accent: #3498db;
-            --danger: #e74c3c;
-            --text-main: #e0e0e0;
-            --text-dim: #b0b0b0;
-        }
-
-        body { 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            background-color: var(--bg-dark); 
-            color: var(--text-main);
-            overflow-x: hidden;
-            background-image: radial-gradient(circle at 20% 30%, #1a1a1a 0%, #121212 100%);
-            min-height: 100vh;
-        }
-
-        /* --- Navbar (Glassmorphism) --- */
-        .navbar { 
-            background: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 1rem 5%; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            border-bottom: 1px solid var(--glass-border);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .navbar h2 { margin: 0; font-size: 1.4rem; color: var(--accent); letter-spacing: -0.5px; }
-        .navbar h2 span { color: white; }
-
-        .nav-links a { 
-            color: var(--text-dim); 
-            text-decoration: none; 
-            margin-left: 25px; 
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .nav-links a:hover { color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
-
-        /* --- Container --- */
-        .container { 
-            max-width: 1000px; 
-            margin: 40px auto; 
-            background: var(--glass-bg); 
-            backdrop-filter: blur(15px);
-            padding: 30px; 
-            border-radius: 24px; 
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-            animation: slideUp 0.6s ease-out;
-        }
-
-        h1 { 
-            text-align: left; 
-            color: white; 
-            margin-bottom: 30px;
-            font-weight: 600;
-            font-size: 1.8rem;
-        }
-
-        /* --- Table Styling --- */
-        .table-responsive {
-            overflow-x: auto;
-            border-radius: 16px;
-        }
-
-        table { 
-            width: 100%; 
-            border-collapse: separate; 
-            border-spacing: 0 8px; /* Memberi jarak antar baris */
-        }
-
-        th { 
-            background-color: rgba(255, 255, 255, 0.03);
-            color: var(--accent); 
-            padding: 18px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        td { 
-            padding: 18px; 
-            background: rgba(255, 255, 255, 0.02);
-            border-top: 1px solid var(--glass-border);
-            border-bottom: 1px solid var(--glass-border);
-            transition: all 0.3s ease;
-        }
-
-        /* Rounded corners untuk baris glassmorphism */
-        td:first-child { border-left: 1px solid var(--glass-border); border-radius: 12px 0 0 12px; }
-        td:last-child { border-right: 1px solid var(--glass-border); border-radius: 0 12px 12px 0; }
-
-        tr {
-            animation: fadeIn 0.5s ease forwards;
-            opacity: 0;
-        }
-
-        /* Hover row effect */
-        tbody tr:hover td {
-            background-color: rgba(255, 255, 255, 0.07);
-            transform: scale(1.01);
-            color: white;
-            border-color: var(--accent);
-        }
-
-        .name-tag {
-            font-weight: 600;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* --- Buttons --- */
-        .btn-delete {
-            background: rgba(231, 76, 60, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(231, 76, 60, 0.2);
-            padding: 8px 18px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .btn-delete:hover {
-            background: var(--danger);
-            color: white;
-            box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);
-            transform: translateY(-2px);
-        }
-
-        /* --- Animations --- */
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateX(-15px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* Staggered delay */
-        {% for log in logs %}
-        tr:nth-child({{ loop.index }}) { animation-delay: {{ loop.index * 0.05 }}s; }
-        {% endfor %}
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 0;
-        }
-
-        .empty-state p { color: var(--text-dim); font-size: 1.1rem; }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-dark); }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
+        body { background: radial-gradient(circle at 50% -20%, #1e293b, #020617); min-height: 100vh; perspective: 1000px; }
+        .glass-nav { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px) saturate(180%); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        .nav-link { position: relative; padding: 0.5rem 1rem; color: rgba(255, 255, 255, 0.6); font-size: 0.875rem; font-weight: 600; transition: all 0.3s ease; }
+        .nav-link.active { color: #59adff; }
+        .nav-link.active::after { content: ''; position: absolute; bottom: -20px; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #59adff, transparent); box-shadow: 0 -2px 10px #59adff; }
+        .blue-glass { background: rgba(89, 173, 255, 0.05); border-radius: 24px; backdrop-filter: blur(12px); border: 1px solid rgba(89, 173, 255, 0.15); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(89, 173, 255, 0.2); border-radius: 10px; }
     </style>
 </head>
-<body>
+<body class="text-slate-100 font-sans antialiased">
 
-    <nav class="navbar">
-        <h2>📷 <span>Absensi</span>Pro</h2>
-        <div class="nav-links">
-            <a href="/">Dashboard</a>
-            <a href="/riwayat">Riwayat</a>
+    <nav class="glass-nav sticky top-0 z-50 h-20 px-8 flex items-center justify-between">
+        <div class="flex items-center gap-10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-[#59adff] to-blue-600 rounded-xl flex items-center justify-center">
+                    <span class="text-white text-xl">📷</span>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight">Absensi<span class="text-[#59adff]">Pro</span></h1>
+            </div>
+            <div class="hidden md:flex items-center gap-2">
+                <a href="/" class="nav-link">Scanner</a>
+                <a href="/riwayat" class="nav-link active">Riwayat</a>
+                {% if role == 'admin' %}
+                <a href="/tambah_wajah" class="ml-4 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold hover:bg-amber-500 hover:text-black transition-all">+ WAJAH</a>
+                {% endif %}
+            </div>
         </div>
+        <a href="/logout" class="text-sm font-semibold text-slate-400 hover:text-red-400 border-l border-white/10 pl-6 ml-2 transition-colors">Keluar</a>
     </nav>
 
-    <div class="container">
-        <h1>Laporan Riwayat</h1>
-        
-        <div class="table-responsive">
-            {% if logs %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Nama Peserta</th>
-                        <th>Tanggal</th>
-                        <th>Waktu Masuk</th>
-                        {% if session.get('role') == 'admin' %}
-                        <th style="text-align: center;">Aksi</th>
-                        {% endif %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in logs %}
-                    <tr id="row-{{ log._id }}">
-                        <td style="color: var(--accent); font-weight: bold;">{{ loop.index }}</td>
-                        <td><span class="name-tag">👤 {{ log.nama }}</span></td>
-                        <td style="color: var(--text-dim);">{{ log.tanggal }}</td>
-                        <td style="color: var(--text-dim);">{{ log.waktu }}</td>
-                        {% if session.get('role') == 'admin' %}
-                        <td style="text-align: center;">
-                            <button class="btn-delete" onclick="confirmDelete('{{ log._id }}')">
-                                Hapus
-                            </button>
-                        </td>
-                        {% endif %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <div class="empty-state">
-                <p>Belum ada data terekam.</p>
+    <main class="max-w-7xl mx-auto p-8 animate-fade-in">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold">Riwayat <span class="text-[#59adff]">Kehadiran</span></h2>
+        </div>
+
+        <div class="blue-glass overflow-hidden border-white/10 shadow-2xl">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                            <th class="p-6">User</th>
+                            <th class="p-6 text-center">Tanggal</th>
+                            <th class="p-6 text-center">Waktu</th>
+                            {% if role == 'admin' %}<th class="p-6 text-right">Aksi</th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for log in logs %}
+                        <tr id="row-{{ log._id }}" class="hover:bg-white/[0.02] transition-colors group">
+                            <td class="p-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center font-bold text-[#59adff] border border-blue-500/10">{{ log.nama[0] }}</div>
+                                    <span class="font-bold text-white">{{ log.nama }}</span>
+                                </div>
+                            </td>
+                            <td class="p-6 text-center text-slate-400 font-medium">{{ log.tanggal }}</td>
+                            <td class="p-6 text-center">
+                                <span class="text-blue-400 bg-blue-400/10 px-3 py-1 rounded-lg font-mono text-xs">{{ log.waktu }}</span>
+                            </td>
+                            {% if role == 'admin' %}
+                            <td class="p-6 text-right">
+                                <button onclick="confirmDelete('{{ log._id }}')" class="opacity-0 group-hover:opacity-100 px-4 py-2 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all text-xs font-bold">HAPUS</button>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            {% endif %}
+        </div>
+    </main>
+
+    <div id="deleteModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300 opacity-0">
+        <div class="blue-glass p-8 max-w-sm w-full mx-4 transform scale-90 transition-transform duration-300 ease-out" id="modalContent">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/30 text-2xl">⚠️</div>
+                <h3 class="text-xl font-bold text-white mb-2">Hapus Data?</h3>
+                <p class="text-slate-400 text-sm mb-8">Data akan hilang permanen dari database.</p>
+                <div class="flex gap-3">
+                    <button onclick="closeModal()" class="flex-1 px-4 py-3 rounded-xl bg-white/5 text-slate-300 font-semibold">Batal</button>
+                    <button id="confirmBtn" class="flex-1 px-4 py-3 rounded-xl bg-red-500 text-white font-semibold shadow-lg shadow-red-500/20">Hapus</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-    function confirmDelete(id) {
-        if (confirm("Hapus data absensi ini secara permanen dari database?")) {
-            const row = document.getElementById(`row-${id}`);
-            
-            // Animasi Glass Out
-            row.style.transition = "all 0.5s ease";
-            row.style.opacity = "0";
-            row.style.transform = "translateX(100px) scale(0.9)";
-
-            setTimeout(() => {
-                fetch(`/delete_log/${id}`, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        row.remove();
-                    } else {
-                        row.style.opacity = "1";
-                        row.style.transform = "translateX(0) scale(1)";
-                        alert("Gagal menghapus: " + data.message);
-                    }
-                });
-            }, 500);
+        let currentId = null;
+        function confirmDelete(id) {
+            currentId = id;
+            const modal = document.getElementById('deleteModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.add('flex', 'opacity-100'); document.getElementById('modalContent').classList.replace('scale-90', 'scale-100'); }, 10);
         }
-    }
+        function closeModal() {
+            const modal = document.getElementById('deleteModal');
+            document.getElementById('modalContent').classList.replace('scale-100', 'scale-90');
+            modal.classList.remove('opacity-100');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+        }
+        document.getElementById('confirmBtn').onclick = () => {
+            fetch(`/delete_log/${currentId}`, { method: 'POST' }).then(() => {
+                document.getElementById(`row-${currentId}`).remove();
+                closeModal();
+            });
+        };
     </script>
 </body>
 </html>

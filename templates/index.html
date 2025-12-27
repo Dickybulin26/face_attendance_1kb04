@@ -3,212 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AbsensiPro - Fast Automatic AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>AbsensiPro - Clean Scanner</title>
     
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
 
     <style>
-        :root {
-            --bg-dark: #121212;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --accent: #3498db;
-            --success: #2ecc71;
-            --warning: #f1c40f;
-            --danger: #e74c3c;
-            --text-main: #e0e0e0;
+        body {
+            background: radial-gradient(circle at 50% -20%, #1e293b, #020617);
+            min-height: 100vh;
+            perspective: 1000px;
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-dark); 
-            color: var(--text-main); overflow: hidden;
-            background-image: radial-gradient(circle at 20% 30%, #1a1a1a 0%, #121212 100%);
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .navbar { 
-            background: rgba(30, 30, 30, 0.8); backdrop-filter: blur(10px);
-            padding: 0.8rem 5%; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--glass-border);
+        .animate-fade-in { animation: fadeInUp 0.5s ease-out forwards; }
+
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .nav-links a { color: var(--text-main); text-decoration: none; margin-right: 20px; font-size: 0.9rem; }
-        .admin-link { color: var(--warning) !important; font-weight: 600; }
-
-        #video-container { 
-            width: 100%; max-width: 600px; aspect-ratio: 4/3;
-            border-radius: 24px; overflow: hidden; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 4px solid var(--glass-border);
-            background: #000; position: relative; transition: all 0.3s ease;
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 1rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        #video-container.success-flash {
-            border-color: var(--success);
-            box-shadow: 0 0 40px rgba(46, 204, 113, 0.4);
+        .nav-link.active { color: #59adff; }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #59adff, transparent);
+            box-shadow: 0 -2px 10px #59adff;
         }
 
-        video { width: 100%; height: 100%; object-fit: cover; }
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+        .blue-glass {
+            background: rgba(89, 173, 255, 0.05);
+            border-radius: 24px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(89, 173, 255, 0.15);
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-3px);
+            border-color: rgba(89, 173, 255, 0.4);
+            background: rgba(89, 173, 255, 0.1);
+        }
 
         .scan-line {
-            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-            background: var(--success); box-shadow: 0 0 20px var(--success);
-            animation: scan 1s infinite linear; z-index: 6; display: none;
-        }
-        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
-
-        .info-detail {
-            margin-top: 15px; font-size: 1rem; color: var(--success);
-            background: rgba(46, 204, 113, 0.1); padding: 8px 20px;
-            border-radius: 12px; border: 1px solid rgba(46, 204, 113, 0.2);
-            opacity: 0; transition: 0.3s; font-weight: 500;
-        }
-        .info-detail.show { opacity: 1; }
-
-        .status-msg { 
-            margin-top: 20px; font-size: 1.1rem; font-weight: 600; padding: 12px 40px;
-            border-radius: 50px; background: var(--glass-bg); border: 1px solid var(--glass-border);
-            min-width: 300px; text-align: center;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #59adff, transparent);
+            filter: drop-shadow(0 0 10px #59adff);
+            animation: scanMove 2.5s ease-in-out infinite;
         }
 
-        .right-panel { flex: 0.6; padding: 30px; background: rgba(25, 25, 25, 0.5); overflow-y: auto; border-left: 1px solid var(--glass-border); }
-        .log-card { background: var(--glass-bg); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--glass-border); display: flex; justify-content: space-between; font-size: 0.9rem; }
+        @keyframes scanMove {
+            0% { top: 0%; opacity: 0; }
+            20% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(89, 173, 255, 0.2); border-radius: 10px; }
     </style>
 </head>
-<body>
+<body class="text-slate-100 font-sans antialiased overflow-x-hidden">
 
-    <nav class="navbar">
-        <div style="display: flex; align-items: center; gap: 30px;">
-            <h2 style="margin:0; color:var(--accent);">📷 AbsensiPro</h2>
-            <div class="nav-links">
-                <a href="/">Scanner</a>
-                <a href="/riwayat">Riwayat</a>
+    <nav class="glass-nav sticky top-0 z-50 h-20 px-8 flex items-center justify-between">
+        <div class="flex items-center gap-10">
+            <div class="flex items-center gap-3 group cursor-default">
+                <div class="w-10 h-10 bg-gradient-to-br from-[#59adff] to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:rotate-12 transition-transform">
+                    <span class="text-white text-xl">📷</span>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight">Absensi<span class="text-[#59adff]">Pro</span></h1>
+            </div>
+
+            <div class="hidden md:flex items-center gap-2">
+                <a href="/" class="nav-link active">Scanner</a>
+                <a href="/riwayat" class="nav-link">Riwayat</a>
                 {% if role == 'admin' %}
-                <a href="/tambah_wajah" class="admin-link">➕ Tambah Wajah</a>
+                <a href="/tambah_wajah" class="ml-4 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold hover:bg-amber-500 hover:text-black transition-all">+ WAJAH</a>
                 {% endif %}
             </div>
         </div>
-        <a href="/logout" style="color:var(--danger); text-decoration:none; font-weight:600; border:1px solid var(--danger); padding:5px 15px; border-radius:8px; font-size: 0.8rem;">Logout</a>
+        <a href="/logout" class="text-sm font-semibold text-slate-400 hover:text-red-400 border-l border-white/10 pl-6 ml-2 transition-colors">Keluar</a>
     </nav>
 
-    <div class="container" style="display: flex; height: calc(100vh - 65px);">
-        <div class="left-panel" style="flex: 1.4; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
-            
-            <div id="video-container">
-                <div id="scan-line" class="scan-line"></div>
-                <video id="input_video" autoplay muted playsinline></video>
-                <canvas id="output_canvas"></canvas>
+    <main class="max-w-7xl mx-auto p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-100px)]">
+        
+        <div class="lg:col-span-7 flex flex-col items-center justify-center animate-fade-in">
+            <div id="video-container" class="blue-glass relative w-full aspect-video overflow-hidden hover-lift border-white/10 shadow-2xl">
+                <div id="scan-line" class="absolute left-0 right-0 z-20 hidden scan-line"></div>
+                <video id="input_video" autoplay muted playsinline class="w-full h-full object-cover"></video>
+                <canvas id="output_canvas" class="absolute inset-0 z-10"></canvas>
             </div>
 
-            <div id="info-detail" class="info-detail">User terdeteksi pada 00:00:00</div>
-
-            <div id="timer" style="margin-top: 10px; font-weight: 600; color: var(--warning); height: 20px;"></div>
-            <div id="result" class="status-msg">Menunggu Deteksi Wajah...</div>
+            <div class="mt-8 flex flex-col items-center gap-4 w-full">
+                <div id="result" class="blue-glass px-12 py-5 text-xl font-bold min-w-[380px] text-center tracking-wider border-blue-500/30 shadow-[0_0_30px_rgba(89,173,255,0.1)]">
+                    MENUNGGU WAJAH...
+                </div>
+                <div id="info-detail" class="opacity-0 transition-all duration-500 px-6 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-bold tracking-wide">
+                    -
+                </div>
+            </div>
         </div>
 
-        <div class="right-panel">
-            <h3>Aktivitas Hari Ini (<span id="log-count">0</span>)</h3>
-            <div id="log-list"></div>
+        <div class="lg:col-span-5 flex flex-col space-y-4 animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="blue-glass p-5 border-white/10 flex justify-between items-center shadow-lg">
+                <div>
+                    <h3 class="font-black text-xs uppercase tracking-[0.3em] text-slate-500">Monitoring Log</h3>
+                    <p class="text-sm text-slate-300 font-semibold">Kehadiran Hari Ini</p>
+                </div>
+                <div class="text-right">
+                    <span id="log-count" class="text-3xl font-black text-[#59adff]">0</span>
+                    <span class="text-[10px] block text-slate-500 font-bold uppercase tracking-widest">Total Kehadiran</span>
+                </div>
+            </div>
+            
+            <div id="log-list" class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                </div>
         </div>
-    </div>
+    </main>
 
-    <canvas id="capture_canvas" width="640" height="480" style="display:none;"></canvas>
+    <canvas id="capture_canvas" width="640" height="480" class="hidden"></canvas>
 
     <script>
         const videoElement = document.getElementById('input_video');
-        const canvasElement = document.getElementById('output_canvas');
-        const canvasCtx = canvasElement.getContext('2d');
-        const videoContainer = document.getElementById('video-container');
         const scanLine = document.getElementById('scan-line');
         const infoDetail = document.getElementById('info-detail');
         const resultDiv = document.getElementById('result');
         const logListDiv = document.getElementById('log-list');
-        const timerDiv = document.getElementById('timer');
+        const logCount = document.getElementById('log-count');
 
-        // Sound Notification
         const successSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'); 
 
         let faceStartTime = null;
         let isProcessing = false;
-        const SCAN_DURATION = 1.0; // Deteksi selama 1 detik
-
-        function playSuccessSound() {
-            successSound.currentTime = 0;
-            successSound.play().catch(e => console.log("Audio play blocked."));
-        }
-
-        function speak(text) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'id-ID';
-            window.speechSynthesis.speak(utterance);
-        }
+        const SCAN_DURATION = 1.0;
 
         const faceDetection = new FaceDetection({
             locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
         });
 
-        faceDetection.setOptions({
-            model: 'short',
-            minDetectionConfidence: 0.6
-        });
+        faceDetection.setOptions({ model: 'short', minDetectionConfidence: 0.6 });
 
         faceDetection.onResults((results) => {
-            if (isProcessing) {
-                canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-                return;
-            }
-
-            canvasElement.width = videoElement.clientWidth;
-            canvasElement.height = videoElement.clientHeight;
-            canvasCtx.save();
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-
+            if (isProcessing) return;
             if (results.detections && results.detections.length > 0) {
                 if (!faceStartTime) {
                     faceStartTime = Date.now();
-                    scanLine.style.display = "block";
+                    scanLine.classList.remove('hidden');
                 }
-
                 const elapsed = (Date.now() - faceStartTime) / 1000;
+                const percent = Math.min(Math.floor((elapsed/SCAN_DURATION)*100), 100);
+                resultDiv.innerText = `SCANNING: ${percent}%`;
                 
-                results.detections.forEach(detection => {
-                    const bbox = detection.boundingBox;
-                    const x = bbox.xCenter * canvasElement.width - (bbox.width * canvasElement.width / 2);
-                    const y = bbox.yCenter * canvasElement.height - (bbox.height * canvasElement.height / 2);
-                    
-                    canvasCtx.strokeStyle = elapsed >= SCAN_DURATION ? "#2ecc71" : "#3498db";
-                    canvasCtx.lineWidth = 4;
-                    canvasCtx.strokeRect(x, y, bbox.width * canvasElement.width, bbox.height * canvasElement.height);
-                    
-                    const percent = Math.min(Math.floor((elapsed/SCAN_DURATION)*100), 100);
-                    resultDiv.innerText = `SCANNING: ${percent}%`;
-                });
-
                 if (elapsed >= SCAN_DURATION) {
                     faceStartTime = null;
                     executeAbsensi();
                 }
             } else {
                 faceStartTime = null;
-                scanLine.style.display = "none";
-                resultDiv.innerText = "Menunggu Deteksi Wajah...";
+                scanLine.classList.add('hidden');
+                resultDiv.innerText = "MENUNGGU WAJAH...";
             }
-            canvasCtx.restore();
         });
 
-        const camera = new Camera(videoElement, {
+        new Camera(videoElement, {
             onFrame: async () => { await faceDetection.send({image: videoElement}); },
-            width: 640, height: 480
-        });
-        camera.start();
+            width: 1280, height: 720
+        }).start();
 
         function executeAbsensi() {
             isProcessing = true;
-            resultDiv.innerText = "IDENTIFIKASI...";
-            scanLine.style.display = "none";
-            
+            resultDiv.innerText = "VERIFIKASI...";
             const captureCanvas = document.getElementById('capture_canvas');
             captureCanvas.getContext('2d').drawImage(videoElement, 0, 0, 640, 480);
             
@@ -219,59 +203,43 @@
             })
             .then(r => r.json())
             .then(data => {
-                const waktu = new Date().toLocaleTimeString('id-ID');
-
                 if(data.status === 'success' || data.status === 'already_present') {
-                    playSuccessSound();
-                    videoContainer.classList.add('success-flash');
-                    infoDetail.innerText = `${data.nama.toUpperCase()} TELAH ABSEN PADA ${waktu}`;
-                    infoDetail.classList.add('show');
-
-                    if(data.status === 'success') {
-                        resultDiv.innerText = "BERHASIL";
-                        speak(`Terima kasih ${data.nama}`);
-                    } else {
-                        resultDiv.innerText = "SUDAH ABSEN";
-                        speak(`${data.nama} sudah absen`);
-                    }
+                    successSound.play();
+                    infoDetail.innerText = `${data.nama.toUpperCase()} BERHASIL ABSEN`;
+                    infoDetail.classList.add('opacity-100');
+                    resultDiv.innerText = data.status === 'success' ? "BERHASIL" : "SUDAH ABSEN";
                     updateLog(); 
-                    startCooldown(3);
+                    setTimeout(() => {
+                        isProcessing = false;
+                        infoDetail.classList.remove('opacity-100');
+                    }, 3000);
                 } else {
                     resultDiv.innerText = "TIDAK DIKENAL";
-                    speak("Wajah tidak dikenal");
                     setTimeout(() => { isProcessing = false; }, 2000);
                 }
             });
         }
 
-        function startCooldown(s) {
-            let count = s;
-            const timer = setInterval(() => {
-                timerDiv.innerText = `READY IN: ${count}s`;
-                count--;
-                if(count < 0) {
-                    clearInterval(timer);
-                    isProcessing = false;
-                    videoContainer.classList.remove('success-flash');
-                    infoDetail.classList.remove('show');
-                    timerDiv.innerText = "";
-                    resultDiv.innerText = "Menunggu Deteksi Wajah...";
-                }
-            }, 1000);
-        }
-
         function updateLog() {
             fetch('/api/today_log').then(res => res.json()).then(data => {
-                logListDiv.innerHTML = "";
-                document.getElementById('log-count').innerText = data.length;
-                data.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'log-card';
-                    card.innerHTML = `<span>👤 ${item.nama}</span><span>${item.waktu}</span>`;
-                    logListDiv.appendChild(card);
-                });
+                logCount.innerText = data.length;
+                logListDiv.innerHTML = data.reverse().map(item => `
+                    <div class="blue-glass p-4 flex justify-between items-center hover-lift animate-fade-in border-white/5">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center font-bold text-[#59adff] border border-blue-500/10">
+                                ${item.nama.charAt(0)}
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm text-white">${item.nama}</p>
+                                <p class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Verified</p>
+                            </div>
+                        </div>
+                        <span class="text-[11px] font-mono text-blue-400 bg-blue-400/10 px-2 py-1 rounded-md">${item.waktu}</span>
+                    </div>
+                `).join('');
             });
         }
+
         updateLog();
     </script>
 </body>
