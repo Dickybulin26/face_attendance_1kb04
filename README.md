@@ -28,12 +28,28 @@ cd nama-repo-anda
 
 ### 2. Instalasi Library Python
 
-Pastikan Anda memiliki Python 3.8+ dan compiler C++ (untuk instalasi `dlib`). Jalankan perintah berikut:
+Pastikan Anda memiliki Python 3.8+ dan compiler C++ (untuk instalasi `dlib`). 
+
+**PENTING:** Gunakan virtual environment untuk menghindari konflik dependensi:
 
 ```bash
-pip install flask pymongo face_recognition opencv-python dlib numpy
+# Buat virtual environment (sudah dibuat)
+python -m venv venv
 
+# Aktifkan virtual environment
+source venv/bin/activate
+
+# Install semua dependensi dari requirements.txt
+pip install -r requirements.txt
 ```
+
+**Dependensi yang akan terinstall:**
+- Flask 3.0.0 - Web framework
+- pymongo 4.6.1 - MongoDB driver  
+- face-recognition 1.3.0 - Library pengenalan wajah
+- opencv-python 4.8.1.78 - Computer vision library
+- numpy 1.26.4 - Library numerik
+- dnspython 2.4.2 - DNS toolkit (untuk MongoDB Atlas)
 
 ### 3. Konfigurasi Database
 
