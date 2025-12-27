@@ -1,12 +1,8 @@
 from bson.objectid import ObjectId
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from pymongo import MongoClient
-import face_recognition
-import cv2
-import numpy as np
-import os
-import base64
 from datetime import datetime
+from face_engine import FaceEngine
 
 app = Flask(__name__)
 app.secret_key = "kunci_rahasia_sistem_absensi"
@@ -22,34 +18,12 @@ try:
 except Exception as e:
     print(f"❌ Error Koneksi: {e}")
 
-# --- 2. KONFIGURASI WAJAH ---
-KNOWN_FACES_DIR = 'known_faces'
-if not os.path.exists(KNOWN_FACES_DIR):
-    os.makedirs(KNOWN_FACES_DIR)
-
-known_face_encodings = []
-known_face_names = []
-
-def reload_faces():
-    global known_face_encodings, known_face_names
-    known_face_encodings = []
-    known_face_names = []
-    for filename in os.listdir(KNOWN_FACES_DIR):
-        if filename.endswith((".jpg", ".png", ".jpeg")):
-            path = os.path.join(KNOWN_FACES_DIR, filename)
-            img = face_recognition.load_image_file(path)
-            enc = face_recognition.face_encodings(img)
-            if enc:
-                known_face_encodings.append(enc[0])
-                # Format nama agar rapi saat disebut TTS (ganti underscore ke spasi)
-                clean_name = os.path.splitext(filename)[0].replace("_", " ")
-                known_face_names.append(clean_name)
-    print(f"🔄 Database wajah dimuat: {len(known_face_names)} orang.")
-
-reload_faces()
+# --- 2. INISIALISASI ENGINE ---
+face_engine = FaceEngine(known_faces_dir='known_faces')
 
 # --- 3. SISTEM LOGIN ---
 USERS = {"admin": "123", "user": "123"}
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -63,22 +37,29 @@ def login():
         return "Login Gagal!"
     return render_template('login.html')
 
+
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
 
 # --- 4. HALAMAN UTAMA & RIWAYAT ---
+
+
 @app.route('/')
 def index():
-    if 'user' not in session: return redirect(url_for('login'))
+    if 'user' not in session:
+        return redirect(url_for('login'))
     return render_template('index.html', role=session['role'])
+
 
 @app.route('/riwayat')
 def riwayat():
-    if 'user' not in session: return redirect(url_for('login'))
+    if 'user' not in session:
+        return redirect(url_for('login'))
     logs = list(collection.find().sort("created_at", -1))
     return render_template('riwayat.html', logs=logs)
+
 
 @app.route('/delete_log/<id>', methods=['POST'])
 def delete_log(id):
@@ -93,71 +74,71 @@ def delete_log(id):
         return jsonify({"status": "error", "message": "ID tidak valid."})
 
 # --- 5. API PROSES SCAN (VERSI AUTO-SCAN) ---
+
+
 @app.route('/process_image', methods=['POST'])
 def process_image():
     try:
         data = request.json['image']
-        header, encoded = data.split(",", 1)
-        nparr = np.frombuffer(base64.b64decode(encoded), np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        # Deteksi Wajah
-        rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        face_locations = face_recognition.face_locations(rgb_img)
-        encs = face_recognition.face_encodings(rgb_img, face_locations)
 
-        if not encs:
-            return jsonify({"status": "error", "message": "Wajah tidak terdeteksi!"})
+        # Proses Image
+        img = face_engine.process_base64_image(data)
 
-        # Komparasi Wajah
-        matches = face_recognition.compare_faces(known_face_encodings, encs[0], tolerance=0.5)
-        if True in matches:
-            first_match_index = matches.index(True)
-            nama = known_face_names[first_match_index]
-            tgl_hari_ini = datetime.now().strftime("%Y-%m-%d")
-            
-            # --- CEK DUPLIKAT (SUDAH ABSEN ATAU BELUM) ---
-            log_ada = collection.find_one({"nama": nama, "tanggal": tgl_hari_ini})
-            
-            if log_ada:
-                # Mengirim status 'already_present' agar frontend menyuarakan peringatan
-                return jsonify({
-                    "status": "already_present", 
-                    "message": f"{nama} sudah terabsensi hadir",
-                    "nama": nama
-                })
-            
-            # --- SIMPAN ABSENSI BARU ---
-            collection.insert_one({
-                "nama": nama, 
-                "tanggal": tgl_hari_ini,
-                "waktu": datetime.now().strftime("%H:%M:%S"),
-                "created_at": datetime.now()
-            })
-            
+        # Deteksi & Kenali
+        status, message, nama = face_engine.recognize_face(img)
+
+        if status == "error":
+            return jsonify({"status": "error", "message": message})
+
+        # Jika berhasil dikenali
+        tgl_hari_ini = datetime.now().strftime("%Y-%m-%d")
+
+        # --- CEK DUPLIKAT (SUDAH ABSEN ATAU BELUM) ---
+        log_ada = collection.find_one({"nama": nama, "tanggal": tgl_hari_ini})
+
+        if log_ada:
             return jsonify({
-                "status": "success", 
-                "message": f"Berhasil Absen: {nama}",
+                "status": "already_present",
+                "message": f"{nama} sudah terabsensi hadir",
                 "nama": nama
             })
-        
-        return jsonify({"status": "error", "message": "Wajah tidak dikenal."})
-    
+
+        # --- SIMPAN ABSENSI BARU ---
+        collection.insert_one({
+            "nama": nama,
+            "tanggal": tgl_hari_ini,
+            "waktu": datetime.now().strftime("%H:%M:%S"),
+            "created_at": datetime.now()
+        })
+
+        return jsonify({
+            "status": "success",
+            "message": f"Berhasil Absen: {nama}",
+            "nama": nama
+        })
+
     except Exception as e:
         print(f"❌ Error Processing: {e}")
         return jsonify({"status": "error", "message": "Terjadi kesalahan sistem."})
 
+
 @app.route('/tambah_wajah', methods=['GET', 'POST'])
 def tambah_wajah():
-    if session.get('role') != 'admin': return redirect(url_for('index'))
+    if session.get('role') != 'admin':
+        return redirect(url_for('index'))
     if request.method == 'POST':
-        nama = request.form['nama'].lower().replace(" ", "_")
-        img_data = request.form['image_base64'].split(",")[1]
-        with open(f"{KNOWN_FACES_DIR}/{nama}.jpg", "wb") as f:
-            f.write(base64.b64decode(img_data))
-        reload_faces()
-        return jsonify({"status": "success", "message": f"Wajah {nama} berhasil didaftarkan!"})
+        nama = request.form['nama']
+        img_data = request.form['image_base64']
+
+        success, msg = face_engine.register_face(nama, img_data)
+
+        if success:
+            return jsonify({"status": "success", "message": msg})
+        else:
+            return jsonify({"status": "error", "message": msg})
+
     return render_template('tambah_wajah.html')
+
 
 @app.route('/api/today_log')
 def today_log():
@@ -165,5 +146,9 @@ def today_log():
     logs = list(collection.find({"tanggal": tgl}).sort("created_at", -1))
     return jsonify([{"nama": l['nama'], "waktu": l['waktu']} for l in logs])
 
+
 if __name__ == '__main__':
     app.run(debug=True)
+
+    # app.run(host='0.0.0.0', port=1324)
+    app.run(host='localhost', port=1324)
