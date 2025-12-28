@@ -9,6 +9,7 @@ app = Flask(__name__)
 app.secret_key = "kunci_rahasia_sistem_absensi_pro"
 
 # --- 1. KONEKSI MONGODB ATLAS ---
+# Pastikan URI ini benar dan IP Anda sudah di-whitelist di MongoDB Atlas
 MONGO_URI = "mongodb+srv://ayerell:farell240507@cluster0.iepzxdd.mongodb.net/?appName=Cluster0"
 
 try:
@@ -40,8 +41,10 @@ def login():
         user = request.form['username']
         pw = request.form['password']
         if user in USERS and USERS[user] == pw:
+            # Set Session
             session['user'] = user
             session['role'] = 'admin' if user == 'admin' else 'user'
+            session['logged_in'] = True  # TAMBAHAN: Agar kompatibel dengan cek HTML {% if session.get('logged_in') %}
             return redirect(url_for('index'))
         return render_template('login.html', error="Username atau Password salah!")
     return render_template('login.html')
@@ -66,9 +69,15 @@ def riwayat():
     user_sekarang = session.get('user')
     
     if role == 'admin':
+        # Admin melihat semua data
         logs = list(collection.find().sort("created_at", -1))
     else:
+        # User biasa hanya melihat data sendiri
         logs = list(collection.find({"nama": user_sekarang}).sort("created_at", -1))
+        
+    # Ubah ObjectId menjadi string agar aman di template (opsional tapi disarankan)
+    for log in logs:
+        log['id'] = str(log['_id'])
         
     return render_template('riwayat.html', logs=logs, role=role)
 
@@ -104,14 +113,27 @@ def delete_user(id):
     except:
         return jsonify({"status": "error"})
 
+# --- FEATURE: DELETE LOG (Dipakai tombol tong sampah) ---
 @app.route('/delete_log/<id>', methods=['POST'])
 def delete_log(id):
-    if session.get('role') != 'admin': return jsonify({"status": "error"})
+    if session.get('role') != 'admin': 
+        return jsonify({"status": "error", "message": "Unauthorized"}), 403
     try:
         collection.delete_one({"_id": ObjectId(id)})
         return jsonify({"status": "success"})
-    except:
-        return jsonify({"status": "error"})
+    except Exception as e:
+        print(f"Error delete log: {e}")
+        return jsonify({"status": "error", "message": str(e)})
+
+# --- FEATURE: CLEAR ALL LOGS (Dipakai tombol hapus semua) ---
+@app.route('/clear_logs')
+def clear_logs():
+    if session.get('role') != 'admin': return redirect(url_for('index'))
+    try:
+        collection.delete_many({}) # Hapus semua dokumen di koleksi log
+    except Exception as e:
+        print(f"Error clearing logs: {e}")
+    return redirect(url_for('riwayat'))
 
 # --- 7. FACE ENGINE API ---
 
@@ -126,17 +148,20 @@ def process_image():
             return jsonify({"status": "error", "message": message})
 
         tgl_hari_ini = datetime.now().strftime("%Y-%m-%d")
-        log_ada = collection.find_one({"nama": nama, "tanggal": tgl_hari_ini})
         
+        # Cek apakah sudah absen hari ini
+        log_ada = collection.find_one({"nama": nama, "tanggal": tgl_hari_ini})
         if log_ada:
             return jsonify({"status": "already_present", "nama": nama})
 
-        collection.insert_one({
+        # Simpan ke Database
+        result = collection.insert_one({
             "nama": nama,
             "tanggal": tgl_hari_ini,
             "waktu": datetime.now().strftime("%H:%M:%S"),
             "created_at": datetime.now()
         })
+        
         return jsonify({"status": "success", "nama": nama})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
@@ -158,7 +183,7 @@ def register_face():
         return jsonify({"status": "success", "message": msg})
     return jsonify({"status": "error", "message": msg})
 
-# --- 8. UTILITY API (UPDATED FOR CALENDAR BUG) ---
+# --- 8. UTILITY API (CALENDAR) ---
 
 @app.route('/api/today_log')
 def today_log():
@@ -179,7 +204,6 @@ def calendar_events():
     events = []
     
     if role == 'admin':
-        # Perbaikan bug: Menggunakan nama asli dari database, jika tidak ada pakai 'Unknown'
         pipeline = [
             {"$group": {
                 "_id": "$tanggal",
@@ -190,7 +214,7 @@ def calendar_events():
         logs_grouped = list(collection.aggregate(pipeline))
         for g in logs_grouped:
             events.append({
-                "title": str(g['count']), # Mengirim angka sebagai string
+                "title": str(g['count']),
                 "start": g['_id'],
                 "extendedProps": {
                     "is_admin": True, 

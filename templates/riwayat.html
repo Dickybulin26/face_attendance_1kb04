@@ -24,7 +24,7 @@
         animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
     }
 
-    /* 2. CALENDAR STYLING (MODERN MINIMALIST) */
+    /* 2. CALENDAR STYLING */
     .fc { font-family: 'Plus Jakarta Sans', sans-serif; --fc-border-color: rgba(255,255,255,0.03); }
     .fc .fc-toolbar-title { font-weight: 800; letter-spacing: -0.03em; color: white; }
     
@@ -42,50 +42,29 @@
     .fc .fc-button:hover { background: rgba(59, 130, 246, 0.1) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
     .fc .fc-button-active { background: var(--accent) !important; border-color: var(--accent) !important; color: white !important; }
 
-    /* --- FITUR: HIGHLIGHT ANGKA SAJA UNTUK HARI INI --- */
-    .fc .fc-daygrid-day.fc-day-today {
-        background-color: transparent !important; /* Hapus background biru bawaan */
-    }
-
+    /* HIGHLIGHT ANGKA TANGGAL */
+    .fc .fc-daygrid-day.fc-day-today { background-color: transparent !important; }
     .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-        color: #59adff !important; /* Ubah warna angka saja */
-        font-weight: 800 !important;
-        font-size: 1.1rem;
-        position: relative;
+        color: #59adff !important; font-weight: 800 !important; font-size: 1.1rem; position: relative;
     }
-
     .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number::after {
-        content: '';
-        position: absolute;
-        bottom: -2px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 4px;
-        height: 4px;
-        background-color: #59adff;
-        border-radius: 50%;
+        content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+        width: 4px; height: 4px; background-color: #59adff; border-radius: 50%;
     }
+    .fc .fc-daygrid-day-number { color: #94a3b8; text-decoration: none !important; }
+    .fc-event { background: transparent !important; border: none !important; }
 
-    .fc .fc-daygrid-day-number {
-        color: #94a3b8; /* Slate-400 untuk tanggal lain */
-        text-decoration: none !important;
-    }
-
-    /* 3. MODERN CHIPS & ICONS */
-    .fc-event { background: transparent !important; border: none !important; } /* Hilangkan background default event */
-    
+    /* 3. EVENT PILLS */
     .event-pill {
         display: flex; align-items: center; justify-content: center; gap: 6px;
         padding: 4px 8px; border-radius: 10px; font-size: 0.65rem; font-weight: 800;
-        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-        cursor: pointer;
+        transition: transform 0.2s; cursor: pointer;
     }
     .event-pill:hover { transform: scale(1.05); }
-    
     .pill-blue { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: #60a5fa; }
     .pill-green { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #34d399; }
 
-    /* 4. SIDEBAR LOG CARDS */
+    /* 4. SIDEBAR LOG CARDS & DELETE BUTTON */
     .log-card {
         background: rgba(255, 255, 255, 0.02);
         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -93,14 +72,27 @@
         padding: 14px;
         display: flex; align-items: center; justify-content: space-between;
         transition: all 0.3s;
+        position: relative;
+        overflow: hidden; /* Agar efek rapi */
     }
     .log-card:hover {
         background: rgba(255, 255, 255, 0.04);
         border-color: rgba(59, 130, 246, 0.3);
         transform: translateX(6px);
     }
+    
+    /* Tombol Delete Tersembunyi, Muncul saat Hover */
+    .delete-btn {
+        opacity: 0;
+        transform: translateX(20px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .log-card:hover .delete-btn {
+        opacity: 1;
+        transform: translateX(0);
+    }
 
-    /* 5. ELEVATED TOOLTIP */
+    /* 5. TOOLTIP */
     #tooltip {
         position: absolute; display: none; z-index: 1000;
         background: rgba(8, 10, 15, 0.95); backdrop-filter: blur(20px);
@@ -129,16 +121,22 @@
                 <span class="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">Activity Report</span>
                 <div class="flex items-center justify-between mt-2">
                     <h2 class="text-3xl font-bold text-white tracking-tight">{{ logs|length }} <span class="text-sm font-medium text-slate-400">Total</span></h2>
+                    {% if session.get('logged_in') %}
+                    <button onclick="deleteAllLogs()" class="w-8 h-8 bg-red-500/10 rounded-lg flex items-center justify-center border border-red-500/20 hover:bg-red-500/20 transition-all" title="Hapus Semua">
+                         <i data-lucide="trash" class="w-4 h-4 text-red-400"></i>
+                    </button>
+                    {% else %}
                     <div class="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20">
                         <i data-lucide="bar-chart-3" class="w-5 h-5 text-blue-400"></i>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
         <div class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
             {% for log in logs %}
-            <div class="log-card group">
+            <div class="log-card group" id="log-{{ log.id }}">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/5 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
                         <i data-lucide="user-check" class="w-5 h-5"></i>
@@ -151,11 +149,22 @@
                         </div>
                     </div>
                 </div>
-                <div class="flex flex-col items-end gap-1">
-                    <span class="text-[10px] font-bold text-blue-400 bg-blue-400/10 px-2 py-1 rounded-lg border border-blue-400/20">{{ log.waktu }}</span>
+                
+                <div class="flex flex-col items-end justify-center gap-1">
+                    <span class="text-[10px] font-bold text-blue-400 bg-blue-400/10 px-2 py-1 rounded-lg border border-blue-400/20 group-hover:opacity-0 transition-opacity absolute right-4">{{ log.waktu }}</span>
+                    
+                    {% if session.get('logged_in') %}
+                    <button onclick="deleteLog('{{ log.id }}')" class="delete-btn bg-red-500/10 hover:bg-red-500 hover:text-white text-red-400 border border-red-500/20 p-2 rounded-lg transition-all" title="Hapus Log">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
+            
+            {% if logs|length == 0 %}
+            <div class="text-center py-10 text-slate-500 text-xs">Belum ada riwayat.</div>
+            {% endif %}
         </div>
     </div>
 
@@ -173,13 +182,47 @@
 
 {% block extra_scripts %}
 <script>
+    // --- FUNGSI DELETE LOG ---
+    function deleteLog(logId) {
+        if(!confirm("Apakah Anda yakin ingin menghapus data riwayat ini?")) return;
+
+        fetch(`/delete_log/${logId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === 'success') {
+                // Hapus elemen dari layar tanpa reload
+                const card = document.getElementById(`log-${logId}`);
+                if(card) {
+                    card.style.transform = 'translateX(100px)';
+                    card.style.opacity = '0';
+                    setTimeout(() => card.remove(), 300);
+                }
+                // Refresh kalender agar data sinkron
+                if(window.calendarInstance) window.calendarInstance.refetchEvents();
+            } else {
+                alert('Gagal menghapus: ' + data.message);
+            }
+        })
+        .catch(err => alert('Terjadi kesalahan sistem.'));
+    }
+
+    // --- FUNGSI HAPUS SEMUA (Opsional) ---
+    function deleteAllLogs() {
+        if(!confirm("PERINGATAN: Semua riwayat akan dihapus permanen. Lanjutkan?")) return;
+        window.location.href = "/clear_logs"; // Pastikan route ini ada di app.py
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         lucide.createIcons();
         
         const calendarEl = document.getElementById('calendar');
         const tooltip = document.getElementById('tooltip');
 
-        const calendar = new FullCalendar.Calendar(calendarEl, {
+        // Simpan instance ke window agar bisa diakses fungsi delete
+        window.calendarInstance = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             locale: 'id',
             dayMaxEvents: true,
@@ -190,21 +233,13 @@
                 const props = arg.event.extendedProps;
                 let html = '';
                 if (props.is_admin) {
-                    html = `<div class="event-pill pill-blue">
-                                <i data-lucide="users" style="width:12px; height:12px;"></i>
-                                <span>${props.count}</span>
-                            </div>`;
+                    html = `<div class="event-pill pill-blue"><i data-lucide="users" style="width:12px; height:12px;"></i><span>${props.count}</span></div>`;
                 } else {
-                    html = `<div class="event-pill pill-green">
-                                <i data-lucide="check-circle" style="width:12px; height:12px;"></i>
-                                <span>HADIR</span>
-                            </div>`;
+                    html = `<div class="event-pill pill-green"><i data-lucide="check-circle" style="width:12px; height:12px;"></i><span>HADIR</span></div>`;
                 }
                 return { html: html };
             },
-
             eventDidMount: function() { lucide.createIcons(); },
-
             eventMouseEnter: function(info) {
                 const props = info.event.extendedProps;
                 const nameEl = document.getElementById('tooltip-name');
@@ -214,34 +249,27 @@
                     nameEl.innerText = "Daftar Kehadiran";
                     let list = '';
                     (props.users || []).forEach(u => {
-                        list += `<div class="flex justify-between items-center gap-8 border-b border-white/5 pb-1">
-                                    <span class="text-[11px] text-slate-300">${u.nama}</span>
-                                    <span class="text-[10px] font-mono text-emerald-400">${u.waktu}</span>
-                                 </div>`;
+                        list += `<div class="flex justify-between items-center gap-8 border-b border-white/5 pb-1"><span class="text-[11px] text-slate-300">${u.nama}</span><span class="text-[10px] font-mono text-emerald-400">${u.waktu}</span></div>`;
                     });
                     timeEl.innerHTML = list || '<p class="text-[10px] text-slate-500">No data</p>';
                 } else {
-                    nameEl.innerText = props.nama || "Log Presensi";
-                    timeEl.innerHTML = `<div class="flex items-center gap-2 text-[11px] text-slate-400">
-                        <i data-lucide="clock" class="w-3 h-3"></i> Terverifikasi: ${props.waktu}</div>`;
+                    nameEl.innerText = props.nama;
+                    timeEl.innerHTML = `<div class="flex items-center gap-2 text-[11px] text-slate-400"><i data-lucide="clock" class="w-3 h-3"></i> Terverifikasi: ${props.waktu}</div>`;
                 }
-                
                 lucide.createIcons();
-
                 const rect = info.el.getBoundingClientRect();
                 tooltip.style.display = 'block';
                 tooltip.style.opacity = '1';
                 tooltip.style.top = (rect.top + window.scrollY) + 'px';
                 tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2)) + 'px';
             },
-
             eventMouseLeave: function() {
                 tooltip.style.opacity = '0';
                 setTimeout(() => { tooltip.style.display = 'none'; }, 150);
             }
         });
         
-        calendar.render();
+        window.calendarInstance.render();
     });
 </script>
 {% endblock %}
