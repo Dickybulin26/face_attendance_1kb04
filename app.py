@@ -27,13 +27,17 @@ if not os.path.exists('known_faces'):
 face_engine = FaceEngine(known_faces_dir='known_faces')
 
 # --- 3. HELPER / MIDDLEWARE ---
+
+
 def is_logged_in():
     return 'user' in session
+
 
 # Data Dummy Login
 USERS = {"admin": "123", "user": "123"}
 
 # --- 4. AUTHENTICATION ROUTES ---
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -44,10 +48,12 @@ def login():
             # Set Session
             session['user'] = user
             session['role'] = 'admin' if user == 'admin' else 'user'
-            session['logged_in'] = True  # TAMBAHAN: Agar kompatibel dengan cek HTML {% if session.get('logged_in') %}
+            # TAMBAHAN: Agar kompatibel dengan cek HTML {% if session.get('logged_in') %}
+            session['logged_in'] = True
             return redirect(url_for('index'))
         return render_template('login.html', error="Username atau Password salah!")
     return render_template('login.html')
+
 
 @app.route('/logout')
 def logout():
@@ -56,57 +62,71 @@ def logout():
 
 # --- 5. MAIN PAGE ROUTES ---
 
+
 @app.route('/')
 def index():
-    if not is_logged_in(): return redirect(url_for('login'))
+    if not is_logged_in():
+        return redirect(url_for('login'))
     return render_template('index.html', role=session.get('role'))
+
 
 @app.route('/riwayat')
 def riwayat():
-    if not is_logged_in(): return redirect(url_for('login'))
-    
+    if not is_logged_in():
+        return redirect(url_for('login'))
+
     role = session.get('role')
     user_sekarang = session.get('user')
-    
+
     if role == 'admin':
         # Admin melihat semua data
         logs = list(collection.find().sort("created_at", -1))
     else:
         # User biasa hanya melihat data sendiri
-        logs = list(collection.find({"nama": user_sekarang}).sort("created_at", -1))
-        
+        logs = list(collection.find(
+            {"nama": user_sekarang}).sort("created_at", -1))
+
     # Ubah ObjectId menjadi string agar aman di template (opsional tapi disarankan)
     for log in logs:
         log['id'] = str(log['_id'])
-        
+
     return render_template('riwayat.html', logs=logs, role=role)
+
 
 @app.route('/daftar_user')
 def daftar_user():
-    if session.get('role') != 'admin': return redirect(url_for('index'))
+    if session.get('role') != 'admin':
+        return redirect(url_for('index'))
     users = list(users_collection.find().sort("nama", 1))
     return render_template('daftar_user.html', users=users, role=session.get('role'))
 
+
 @app.route('/tambah_wajah')
 def tambah_wajah_view():
-    if session.get('role') != 'admin': return redirect(url_for('index'))
+    if session.get('role') != 'admin':
+        return redirect(url_for('index'))
     return render_template('tambah_wajah.html', role=session.get('role'))
 
 # --- 6. USER & LOG MANAGEMENT API ---
 
+
 @app.route('/edit_user/<id>', methods=['POST'])
 def edit_user(id):
-    if session.get('role') != 'admin': return jsonify({"status": "error"})
+    if session.get('role') != 'admin':
+        return jsonify({"status": "error"})
     new_nama = request.json.get('nama')
     try:
-        users_collection.update_one({"_id": ObjectId(id)}, {"$set": {"nama": new_nama}})
+        users_collection.update_one({"_id": ObjectId(id)}, {
+                                    "$set": {"nama": new_nama}})
         return jsonify({"status": "success"})
     except:
         return jsonify({"status": "error"})
 
+
 @app.route('/delete_user/<id>', methods=['POST'])
 def delete_user(id):
-    if session.get('role') != 'admin': return jsonify({"status": "error"})
+    if session.get('role') != 'admin':
+        return jsonify({"status": "error"})
     try:
         users_collection.delete_one({"_id": ObjectId(id)})
         return jsonify({"status": "success"})
@@ -114,9 +134,11 @@ def delete_user(id):
         return jsonify({"status": "error"})
 
 # --- FEATURE: DELETE LOG (Dipakai tombol tong sampah) ---
+
+
 @app.route('/delete_log/<id>', methods=['POST'])
 def delete_log(id):
-    if session.get('role') != 'admin': 
+    if session.get('role') != 'admin':
         return jsonify({"status": "error", "message": "Unauthorized"}), 403
     try:
         collection.delete_one({"_id": ObjectId(id)})
@@ -126,16 +148,20 @@ def delete_log(id):
         return jsonify({"status": "error", "message": str(e)})
 
 # --- FEATURE: CLEAR ALL LOGS (Dipakai tombol hapus semua) ---
+
+
 @app.route('/clear_logs')
 def clear_logs():
-    if session.get('role') != 'admin': return redirect(url_for('index'))
+    if session.get('role') != 'admin':
+        return redirect(url_for('index'))
     try:
-        collection.delete_many({}) # Hapus semua dokumen di koleksi log
+        collection.delete_many({})  # Hapus semua dokumen di koleksi log
     except Exception as e:
         print(f"Error clearing logs: {e}")
     return redirect(url_for('riwayat'))
 
 # --- 7. FACE ENGINE API ---
+
 
 @app.route('/process_image', methods=['POST'])
 def process_image():
@@ -148,7 +174,7 @@ def process_image():
             return jsonify({"status": "error", "message": message})
 
         tgl_hari_ini = datetime.now().strftime("%Y-%m-%d")
-        
+
         # Cek apakah sudah absen hari ini
         log_ada = collection.find_one({"nama": nama, "tanggal": tgl_hari_ini})
         if log_ada:
@@ -161,14 +187,16 @@ def process_image():
             "waktu": datetime.now().strftime("%H:%M:%S"),
             "created_at": datetime.now()
         })
-        
+
         return jsonify({"status": "success", "nama": nama})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
+
 @app.route('/register_face', methods=['POST'])
 def register_face():
-    if session.get('role') != 'admin': return jsonify({"status": "error"})
+    if session.get('role') != 'admin':
+        return jsonify({"status": "error"})
     data = request.json
     nama = data.get('nama')
     img_data = data.get('image')
@@ -178,12 +206,13 @@ def register_face():
         users_collection.insert_one({
             "nama": nama,
             "created_at": datetime.now(),
-            "image_preview": img_data 
+            "image_preview": img_data
         })
         return jsonify({"status": "success", "message": msg})
     return jsonify({"status": "error", "message": msg})
 
 # --- 8. UTILITY API (CALENDAR) ---
+
 
 @app.route('/api/today_log')
 def today_log():
@@ -191,18 +220,21 @@ def today_log():
     role = session.get('role')
     user_sekarang = session.get('user')
     query = {"tanggal": tgl}
-    if role != 'admin': query["nama"] = user_sekarang
+    if role != 'admin':
+        query["nama"] = user_sekarang
     logs = list(collection.find(query).sort("created_at", -1))
     return jsonify([{"nama": l.get('nama', 'Unknown'), "waktu": l['waktu']} for l in logs])
 
+
 @app.route('/api/calendar_events')
 def calendar_events():
-    if not is_logged_in(): return jsonify([])
-    
+    if not is_logged_in():
+        return jsonify([])
+
     role = session.get('role')
     user_sekarang = session.get('user')
     events = []
-    
+
     if role == 'admin':
         pipeline = [
             {"$group": {
@@ -217,8 +249,8 @@ def calendar_events():
                 "title": str(g['count']),
                 "start": g['_id'],
                 "extendedProps": {
-                    "is_admin": True, 
-                    "count": g['count'], 
+                    "is_admin": True,
+                    "count": g['count'],
                     "users": g['details']
                 },
                 "backgroundColor": "transparent",
@@ -231,7 +263,7 @@ def calendar_events():
                 "title": "Hadir",
                 "start": l['tanggal'],
                 "extendedProps": {
-                    "is_admin": False, 
+                    "is_admin": False,
                     "nama": l.get('nama', user_sekarang),
                     "waktu": l['waktu']
                 },
@@ -239,6 +271,7 @@ def calendar_events():
                 "borderColor": "transparent"
             })
     return jsonify(events)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=1324, debug=True)

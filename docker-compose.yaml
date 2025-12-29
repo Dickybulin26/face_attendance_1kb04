@@ -1,0 +1,9 @@
+services:
+  web:
+    build: .
+    container_name: face_attendance_app
+    ports:
+      - "1324:1324"
+    volumes:
+      - ./known_faces:/app/known_faces
+    restart: always
