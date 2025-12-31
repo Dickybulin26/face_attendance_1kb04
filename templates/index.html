@@ -1,174 +1,59 @@
-{% extends "base.html" %}
-
-{% block title %}Smart Scan Pro - Auto Voice{% endblock %}
-
-{% block head %}
+{% extends "base.html" %} {% block title %}Smart Scan Pro - Auto Voice{%
+endblock %} {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
-
-<style>
-    .laser-line {
-        position: absolute; width: 100%; height: 3px;
-        background: linear-gradient(to right, transparent, #fff, #3b82f6, #fff, transparent);
-        box-shadow: 0 0 15px #3b82f6;
-        animation: scan-move 0.6s linear infinite;
-        z-index: 25;
-    }
-    @keyframes scan-move { 0% { top: 0%; } 100% { top: 100%; } }
-    
-    #face-guideline {
-        position: absolute; border: 2px solid rgba(255,255,255,0.8); border-radius: 20px;
-        pointer-events: none; transition: all 0.05s ease-out; z-index: 20;
-    }
-    
-    .video-container {
-        position: relative; border-radius: 24px; overflow: hidden;
-        background: #000; border: 1px solid rgba(255,255,255,0.1);
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<main class="max-w-7xl mx-auto p-6 flex items-center justify-center min-h-[calc(100vh-100px)]">
-    <div class="w-full grid lg:grid-cols-12 gap-6">
-        <div class="lg:col-span-8 relative">
-            <div class="video-container aspect-video shadow-2xl">
-                <div class="absolute top-5 left-5 z-50 bg-black/60 backdrop-blur-md p-3 px-4 rounded-xl flex items-center gap-3 border border-white/10">
-                    <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                    <span id="status-text" class="text-white font-bold text-[10px] tracking-widest uppercase">System Active</span>
-                </div>
-
-                <video id="video" autoplay muted playsinline class="w-full h-full object-cover scale-x-[-1]"></video>
-                
-                <div id="face-guideline" class="hidden">
-                    <div class="laser-line"></div>
-                </div>
-            </div>
+{% endblock %} {% block content %}
+<main
+  class="max-w-7xl mx-auto p-6 flex items-center justify-center min-h-[calc(100vh-100px)]"
+>
+  <div class="w-full grid lg:grid-cols-12 gap-6">
+    <div class="lg:col-span-8 relative">
+      <div class="video-container aspect-video shadow-2xl">
+        <div
+          class="absolute top-5 left-5 z-50 bg-black/60 backdrop-blur-md p-3 px-4 rounded-xl flex items-center gap-3 border border-white/10"
+        >
+          <div
+            id="status-dot"
+            class="w-2.5 h-2.5 rounded-full bg-emerald-500"
+          ></div>
+          <span
+            id="status-text"
+            class="text-white font-bold text-[10px] tracking-widest uppercase"
+            >System Active</span
+          >
         </div>
 
-        <div class="lg:col-span-4 flex flex-col">
-            <div class="blue-glass p-5 border-white/10 flex-1 flex flex-col max-h-[500px]">
-                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">Daftar Hadir</h3>
-                <div id="today-logs" class="space-y-2 overflow-y-auto flex-1 pr-2 custom-scrollbar"></div>
-            </div>
+        <video
+          id="video"
+          autoplay
+          muted
+          playsinline
+          class="w-full h-full object-cover scale-x-[-1]"
+        ></video>
+
+        <div id="face-guideline" class="hidden">
+          <div class="laser-line"></div>
         </div>
+      </div>
     </div>
+
+    <div class="lg:col-span-4 flex flex-col">
+      <div
+        class="blue-glass p-5 border-white/10 flex-1 flex flex-col max-h-[500px]"
+      >
+        <h3
+          class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4"
+        >
+          Daftar Hadir
+        </h3>
+        <div
+          id="today-logs"
+          class="space-y-2 overflow-y-auto flex-1 pr-2 custom-scrollbar"
+        ></div>
+      </div>
+    </div>
+  </div>
 </main>
 
 <canvas id="canvas" class="hidden"></canvas>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-    const video = document.getElementById('video');
-    const guideline = document.getElementById('face-guideline');
-    const statusText = document.getElementById('status-text');
-    const canvas = document.getElementById('canvas');
-
-    let isProcessing = false;
-
-    // FUNGSI SUARA OTOMATIS (Tanpa Klik)
-    function speak(text) {
-        if ('speechSynthesis' in window) {
-            // Batalkan suara yang sedang berjalan agar tidak antre
-            window.speechSynthesis.cancel();
-            
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'id-ID';
-            msg.rate = 1.1; // Sedikit lebih cepat agar responsif
-            msg.pitch = 1.0;
-            window.speechSynthesis.speak(msg);
-        }
-    }
-
-    const faceDetection = new FaceDetection({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
-    });
-
-    faceDetection.setOptions({ model: 'short', minDetectionConfidence: 0.75 });
-
-    faceDetection.onResults((results) => {
-        if (results.detections.length > 0) {
-            const det = results.detections[0].boundingBox;
-            const vW = video.offsetWidth;
-            const vH = video.offsetHeight;
-
-            guideline.classList.remove('hidden');
-            guideline.style.width = (det.width * vW) + 'px';
-            guideline.style.height = (det.height * vH) + 'px';
-            guideline.style.left = (vW - (det.xCenter * vW) - (det.width * vW / 2)) + 'px';
-            guideline.style.top = (det.yCenter * vH - det.height * vH / 2) + 'px';
-
-            if (!isProcessing) processScan();
-        } else {
-            guideline.classList.add('hidden');
-        }
-    });
-
-    async function processScan() {
-        isProcessing = true;
-        updateStatus("Verifying...", "bg-blue-500");
-        
-        canvas.width = 640;
-        canvas.height = 480;
-        const ctx = canvas.getContext('2d');
-        ctx.save();
-        ctx.scale(-1, 1);
-        ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-        ctx.restore();
-        
-        const base64 = canvas.toDataURL('image/jpeg', 0.7);
-
-        try {
-            const res = await fetch('/process_image', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({image: base64})
-            });
-            const data = await res.json();
-
-            if (data.status === 'success') {
-                updateStatus(data.nama.toUpperCase(), "bg-emerald-500");
-                speak("Absensi berhasil. Terima kasih " + data.nama);
-                loadLogs();
-                setTimeout(() => { isProcessing = false; }, 3000); 
-            } else if (data.status === 'already_present') {
-                updateStatus("DONE", "bg-green-500");
-                speak("Anda sudah absen hari ini.");
-                setTimeout(() => { isProcessing = false; }, 2000);
-            } else {
-                updateStatus("UNKNOWN", "bg-red-500");
-                speak("Wajah tidak dikenali.");
-                setTimeout(() => { isProcessing = false; }, 1200); 
-            }
-        } catch (e) {
-            isProcessing = false;
-        }
-    }
-
-    function updateStatus(txt, cls) {
-        statusText.innerText = txt;
-        document.getElementById('status-dot').className = `w-2.5 h-2.5 rounded-full ${cls}`;
-    }
-
-    const camera = new Camera(video, {
-        onFrame: async () => { await faceDetection.send({image: video}); },
-        width: 1280, height: 720
-    });
-    camera.start();
-
-    async function loadLogs() {
-        const r = await fetch('/api/today_log');
-        const d = await r.json();
-        document.getElementById('today-logs').innerHTML = d.map(l => `
-            <div class="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between">
-                <div>
-                    <p class="text-white font-bold text-xs uppercase">${l.nama}</p>
-                    <p class="text-[9px] text-slate-400 font-bold">${l.waktu}</p>
-                </div>
-            </div>
-        `).join('');
-    }
-    loadLogs();
-</script>
 {% endblock %}

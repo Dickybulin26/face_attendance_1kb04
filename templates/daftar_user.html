@@ -1,105 +1,166 @@
-{% extends "base.html" %}
-
-{% block title %}Database Wajah - AbsensiPro{% endblock %}
-
-{% block extra_style %}
-    <style>
-        .animate-fade-in { animation: fadeInUp 0.4s ease-out forwards; opacity: 0; }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .user-card:hover {
-            border-color: rgba(89, 173, 255, 0.4);
-            transform: translateY(-2px);
-        }
-    </style>
-{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}Database Wajah - AbsensiPro{%
+endblock %} {% block extra_style %}
+<style>
+  .animate-fade-in {
+    animation: fadeInUp 0.4s ease-out forwards;
+    opacity: 0;
+  }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .user-card:hover {
+    border-color: rgba(89, 173, 255, 0.4);
+    transform: translateY(-2px);
+  }
+</style>
+{% endblock %} {% block content %}
 <main class="max-w-7xl mx-auto p-8">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-            <h2 class="text-2xl font-bold tracking-tight text-white">Database <span class="text-[#59adff]">User</span></h2>
-            <p class="text-slate-500 text-sm mt-1 uppercase tracking-widest font-bold text-[10px]">Total: {{ users|length }} User</p>
-        </div>
-        <a href="/tambah_wajah" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black transition-all shadow-lg shadow-blue-600/20">
-            TAMBAH USER BARU
-        </a>
+  <div
+    class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8"
+  >
+    <div>
+      <h2 class="text-2xl font-bold tracking-tight text-white">
+        Database <span class="text-[#59adff]">User</span>
+      </h2>
+      <p
+        class="text-slate-500 text-sm mt-1 uppercase tracking-widest font-bold text-[10px]"
+      >
+        Total: {{ users|length }} User
+      </p>
     </div>
+    <a
+      href="/tambah_wajah"
+      class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black transition-all shadow-lg shadow-blue-600/20"
+    >
+      TAMBAH USER BARU
+    </a>
+  </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {% for user in users %}
-        <div id="card-{{ user._id }}" class="blue-glass p-5 border-white/10 user-card transition-all group animate-fade-in" style="animation-delay: {{ loop.index0 * 0.05 }}s">
-            <div class="flex items-center gap-4 mb-5">
-                <div class="w-14 h-14 rounded-2xl overflow-hidden border-2 border-blue-500/20 bg-slate-900 shadow-inner">
-                    {% if user.image_preview %}
-                        <img src="{{ user.image_preview }}" class="w-full h-full object-cover">
-                    {% else %}
-                        <div class="w-full h-full flex items-center justify-center text-slate-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="flex-1 overflow-hidden">
-                    <input type="text" id="name-{{ user._id }}" value="{{ user.nama }}" 
-                           class="bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none font-bold text-white text-base w-full transition-all truncate" readonly>
-                    <p class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-1">
-                        ID: ...{{ (user._id|string)[-8:] }}
-                    </p>
-                </div>
-            </div>
-
-            <div class="flex gap-2">
-                <button onclick="toggleEdit('{{ user._id }}')" id="btn-edit-{{ user._id }}" 
-                        class="flex-1 py-2.5 rounded-xl bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-wider border border-blue-500/20 hover:bg-blue-500/20 transition-all">
-                    Edit Nama
-                </button>
-                <button onclick="deleteUser('{{ user._id }}')" 
-                        class="px-4 py-2.5 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black border border-red-500/20 hover:bg-red-500 hover:text-white transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
-                </button>
-            </div>
+  <div
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+  >
+    {% for user in users %}
+    <div
+      id="card-{{ user._id }}"
+      class="blue-glass p-5 border-white/10 user-card transition-all group animate-fade-in"
+      style="animation-delay: {{ loop.index0 * 0.05 }}s"
+    >
+      <div class="flex items-center gap-4 mb-5">
+        <div
+          class="w-14 h-14 rounded-2xl overflow-hidden border-2 border-blue-500/20 bg-slate-900 shadow-inner"
+        >
+          {% if user.image_preview %}
+          <img
+            src="{{ user.image_preview }}"
+            class="w-full h-full object-cover"
+          />
+          {% else %}
+          <div
+            class="w-full h-full flex items-center justify-center text-slate-700"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+              />
+            </svg>
+          </div>
+          {% endif %}
         </div>
-        {% endfor %}
+
+        <div class="flex-1 overflow-hidden">
+          <input
+            type="text"
+            id="name-{{ user._id }}"
+            value="{{ user.nama }}"
+            class="bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none font-bold text-white text-base w-full transition-all truncate"
+            readonly
+          />
+          <p
+            class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-1"
+          >
+            ID: ...{{ (user._id|string)[-8:] }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button
+          onclick="toggleEdit('{{ user._id }}')"
+          id="btn-edit-{{ user._id }}"
+          class="flex-1 py-2.5 rounded-xl bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-wider border border-blue-500/20 hover:bg-blue-500/20 transition-all"
+        >
+          Edit Nama
+        </button>
+        <button
+          onclick="deleteUser('{{ user._id }}')"
+          class="px-4 py-2.5 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black border border-red-500/20 hover:bg-red-500 hover:text-white transition-all"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+            />
+          </svg>
+        </button>
+      </div>
     </div>
+    {% endfor %}
+  </div>
 </main>
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
-    function toggleEdit(id) {
-        const input = document.getElementById(`name-${id}`);
-        const btn = document.getElementById(`btn-edit-${id}`);
-        if (input.readOnly) {
-            input.readOnly = false;
-            input.focus();
-            input.classList.add('border-blue-500', 'text-blue-400');
-            btn.innerText = "SIMPAN";
-            btn.classList.replace('bg-blue-500/10', 'bg-emerald-600');
-            btn.classList.replace('text-blue-400', 'text-white');
-        } else {
-            saveEdit(id);
-        }
+  function toggleEdit(id) {
+    const input = document.getElementById(`name-${id}`);
+    const btn = document.getElementById(`btn-edit-${id}`);
+    if (input.readOnly) {
+      input.readOnly = false;
+      input.focus();
+      input.classList.add("border-blue-500", "text-blue-400");
+      btn.innerText = "SIMPAN";
+      btn.classList.replace("bg-blue-500/10", "bg-emerald-600");
+      btn.classList.replace("text-blue-400", "text-white");
+    } else {
+      saveEdit(id);
     }
+  }
 
-    function saveEdit(id) {
-        const newName = document.getElementById(`name-${id}`).value;
-        fetch(`/edit_user/${id}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({nama: newName})
-        }).then(() => location.reload());
-    }
+  function saveEdit(id) {
+    const newName = document.getElementById(`name-${id}`).value;
+    fetch(`/edit_user/${id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nama: newName }),
+    }).then(() => location.reload());
+  }
 
-    function deleteUser(id) {
-        if(confirm("Hapus user ini?")) {
-            fetch(`/delete_user/${id}`, { method: 'POST' })
-            .then(() => {
-                document.getElementById(`card-${id}`).remove();
-            });
-        }
+  function deleteUser(id) {
+    if (confirm("Hapus user ini?")) {
+      fetch(`/delete_user/${id}`, { method: "POST" }).then(() => {
+        document.getElementById(`card-${id}`).remove();
+      });
     }
+  }
 </script>
 {% endblock %}

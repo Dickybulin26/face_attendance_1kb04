@@ -1,76 +1,128 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>"
+    />
     <title>{% block title %}AbsensiPro{% endblock %}</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles/style.css') }}"
+    />
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <style>
-        :root { --bg-deep: #020617; --accent: #3b82f6; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-deep); color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; }
-        .page-animate { animation: pageReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
-        @keyframes pageReveal { from { opacity: 0; transform: translateY(10px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
-        .blue-glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; }
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-    </style>
     {% block head %}{% endblock %}
-</head>
-<body class="page-animate">
+  </head>
+  <body class="page-animate">
     <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
-        <div class="flex items-center gap-3">
-            <div class="w-11 h-11 bg-blue-600/10 rounded-2xl flex items-center justify-center border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                <i data-lucide="shield-check" class="text-blue-400 w-6 h-6"></i>
-            </div>
-            <div class="flex flex-col">
-                <span class="font-black text-lg tracking-tighter uppercase leading-none">Absensi<span class="text-blue-500">Pro</span></span>
-                <span class="text-[8px] font-bold text-slate-500 tracking-[0.3em] uppercase">Security System</span>
-            </div>
+      <div class="flex items-center gap-3">
+        <div
+          class="w-11 h-11 bg-blue-600/10 rounded-2xl flex items-center justify-center border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+        >
+          <i data-lucide="shield-check" class="text-blue-400 w-6 h-6"></i>
         </div>
-        
-        <div class="hidden md:flex gap-8 items-center text-[10px] font-black uppercase tracking-[0.2em]">
-            <a href="/" class="flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-all"><i data-lucide="scan-face" class="w-4 h-4"></i> Scanner</a>
-            <a href="/riwayat" class="flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-all"><i data-lucide="history" class="w-4 h-4"></i> Riwayat</a>
-            {% if session.get('role') == 'admin' %}
-            <div class="h-4 w-[1px] bg-white/10 mx-2"></div>
-            <a href="/daftar_user" class="flex items-center gap-2 text-amber-400/80 hover:text-amber-400 transition-all"><i data-lucide="users" class="w-4 h-4"></i> Database</a>
-            <a href="/tambah_wajah" class="flex items-center gap-2 text-emerald-400/80 hover:text-emerald-400 transition-all"><i data-lucide="user-plus" class="w-4 h-4"></i> Registrasi</a>
-            {% endif %}
-            <a href="/logout" class="ml-4 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all">Logout</a>
+        <div class="flex flex-col">
+          <span
+            class="font-black text-lg tracking-tighter uppercase leading-none"
+            >Absensi<span class="text-blue-500">Pro</span></span
+          >
+          <span
+            class="text-[8px] font-bold text-slate-500 tracking-[0.3em] uppercase"
+            >Security System</span
+          >
         </div>
+      </div>
+
+      <div
+        class="hidden md:flex gap-8 items-center text-[10px] font-black uppercase tracking-[0.2em]"
+      >
+        <a
+          href="/"
+          class="flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-all"
+          ><i data-lucide="scan-face" class="w-4 h-4"></i> Scanner</a
+        >
+        <a
+          href="/riwayat"
+          class="flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-all"
+          ><i data-lucide="history" class="w-4 h-4"></i> Riwayat</a
+        >
+        {% if session.get('role') == 'admin' %}
+        <div class="h-4 w-[1px] bg-white/10 mx-2"></div>
+        <a
+          href="/daftar_user"
+          class="flex items-center gap-2 text-amber-400/80 hover:text-amber-400 transition-all"
+          ><i data-lucide="users" class="w-4 h-4"></i> Database</a
+        >
+        <a
+          href="/tambah_wajah"
+          class="flex items-center gap-2 text-emerald-400/80 hover:text-emerald-400 transition-all"
+          ><i data-lucide="user-plus" class="w-4 h-4"></i> Registrasi</a
+        >
+        {% endif %}
+        <a
+          href="/logout"
+          class="ml-4 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+          >Logout</a
+        >
+      </div>
     </nav>
 
-    <div class="flex-1">
-        {% block content %}{% endblock %}
-    </div>
+    <div class="flex-1">{% block content %}{% endblock %}</div>
 
-    <footer class="max-w-7xl mx-auto w-full px-6 py-10 mt-10 border-t border-white/5">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-center">
-                    <i data-lucide="code-2" class="w-5 h-5 text-blue-400"></i>
-                </div>
-                <div>
-                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Developed By</p>
-                    <p class="text-sm font-bold">Farell Rhezky <span class="text-blue-500">20125328</span></p>
-                    <p class="text-sm font-bold">Dicky Asqaelani <span class="text-blue-500">20125258</span></p>
-                    <p class="text-[9px] mt-2 font-black text-slate-500 uppercase tracking-widest">Asissted By</p>
-                    <p class="text-sm font-bold">Gemini <span class="text-blue-500">A.i</span></p>
-                </div>
-            </div>
-            <div class="text-right">
-                <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/5 px-3 py-1 rounded-full border border-emerald-500/10">● SYSTEM ACTIVE</span>
-                <p class="text-[10px] text-slate-600 mt-2 font-medium">© 2025 AbsensiPro Security. v2.0</p>
-            </div>
+    <footer
+      class="max-w-7xl mx-auto w-full px-6 py-10 mt-10 border-t border-white/5"
+    >
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-4">
+          <div
+            class="w-10 h-10 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-center"
+          >
+            <i data-lucide="code-2" class="w-5 h-5 text-blue-400"></i>
+          </div>
+          <div>
+            <p
+              class="text-[9px] font-black text-slate-500 uppercase tracking-widest"
+            >
+              Developed By
+            </p>
+            <p class="text-sm font-bold">
+              Farell Rhezky <span class="text-blue-500">20125328</span>
+            </p>
+            <p class="text-sm font-bold">
+              Dicky Asqaelani <span class="text-blue-500">20125258</span>
+            </p>
+            <p
+              class="text-[9px] mt-2 font-black text-slate-500 uppercase tracking-widest"
+            >
+              Asissted By
+            </p>
+            <p class="text-sm font-bold">
+              Gemini <span class="text-blue-500">A.i</span>
+            </p>
+          </div>
         </div>
+        <div class="text-right">
+          <span
+            class="text-[10px] font-bold text-emerald-500 bg-emerald-500/5 px-3 py-1 rounded-full border border-emerald-500/10"
+            >● SYSTEM ACTIVE</span
+          >
+          <p class="text-[10px] text-slate-600 mt-2 font-medium">
+            © 2025 AbsensiPro Security. v2.0
+          </p>
+        </div>
+      </div>
     </footer>
 
-    <script>lucide.createIcons();</script>
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
     {% block extra_scripts %}{% endblock %}
-</body>
+  </body>
 </html>

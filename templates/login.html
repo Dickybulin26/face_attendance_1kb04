@@ -1,34 +1,75 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - AbsensiPro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body { background: radial-gradient(circle at 50% 50%, #1e293b 0%, #020617 100%); font-family: 'Plus Jakarta Sans', sans-serif; }
-        .blue-glass { background: rgba(89, 173, 255, 0.08); backdrop-filter: blur(20px); border: 1px solid rgba(89, 173, 255, 0.2); }
+      body {
+        background: radial-gradient(
+          circle at 50% 50%,
+          #1e293b 0%,
+          #020617 100%
+        );
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      .blue-glass {
+        background: rgba(89, 173, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(89, 173, 255, 0.2);
+      }
     </style>
-</head>
-<body class="flex items-center justify-center min-h-screen text-slate-200">
-    <div class="blue-glass p-10 rounded-[40px] w-full max-w-md shadow-2xl mx-4 animate-fade-in">
-        <div class="text-center mb-10">
-            <div class="w-16 h-16 bg-gradient-to-br from-[#59adff] to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/20">
-                <span class="text-white text-3xl">📷</span>
-            </div>
-            <h2 class="text-2xl font-bold text-white tracking-tighter">Absensi<span class="text-[#59adff]">Pro</span></h2>
-            <p class="text-slate-500 text-[10px] uppercase tracking-[0.3em] mt-3 font-bold">Secure Access Terminal</p>
+  </head>
+  <body class="flex items-center justify-center min-h-screen text-slate-200">
+    <div
+      class="blue-glass p-10 rounded-[40px] w-full max-w-md shadow-2xl mx-4 animate-fade-in"
+    >
+      <div class="text-center mb-10">
+        <div
+          class="w-16 h-16 bg-gradient-to-br from-[#59adff] to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/20"
+        >
+          <span class="text-white text-3xl">📷</span>
         </div>
-        <form method="POST" class="space-y-6">
-            <div>
-                <input type="text" name="username" placeholder="Username" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-[#59adff] transition-all text-white">
-            </div>
-            <div>
-                <input type="password" name="password" placeholder="Password" required class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-[#59adff] transition-all text-white">
-            </div>
-            <button type="submit" class="w-full bg-[#59adff] text-slate-900 font-black py-4 rounded-2xl hover:scale-[1.02] transition-transform shadow-lg shadow-blue-500/20 tracking-widest text-xs uppercase">Login</button>
-        </form>
+        <h2 class="text-2xl font-bold text-white tracking-tighter">
+          Absensi<span class="text-[#59adff]">Pro</span>
+        </h2>
+        <p
+          class="text-slate-500 text-[10px] uppercase tracking-[0.3em] mt-3 font-bold"
+        >
+          Secure Access Terminal
+        </p>
+      </div>
+      <form method="POST" class="space-y-6">
+        <div>
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            required
+            class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-[#59adff] transition-all text-white"
+          />
+        </div>
+        <div>
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            required
+            class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-[#59adff] transition-all text-white"
+          />
+        </div>
+        <button
+          type="submit"
+          class="w-full bg-[#59adff] text-slate-900 font-black py-4 rounded-2xl hover:scale-[1.02] transition-transform shadow-lg shadow-blue-500/20 tracking-widest text-xs uppercase"
+        >
+          Login
+        </button>
+      </form>
     </div>
-</body>
+  </body>
 </html>
