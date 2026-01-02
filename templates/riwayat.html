@@ -1,233 +1,59 @@
-{% extends "base.html" %} 
-
-{% block title %}Riwayat - AbsensiPro{% endblock %} 
-
-{% block head %}
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+{% extends "base.html" %} {% block title %}Riwayat - AbsensiPro{% endblock %} {%
+block head %}
+<link
+  href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+  rel="stylesheet"
+/>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-
-<style>
-  :root {
-    --accent: #3b82f6;
-    --glass-border: rgba(255, 255, 255, 0.05);
-  }
-
-  /* 1. ANIMASI LOAD */
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); filter: blur(5px); }
-    to { opacity: 1; transform: translateY(0); filter: blur(0); }
-  }
-
-  .animate-modern {
-    animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-  }
-
-  /* 2. FULLCALENDAR MODERN OVERRIDE */
-  .fc {
-    font-family: "Plus Jakarta Sans", sans-serif;
-    color: white;
-  }
-
-  /* HILANGKAN GARIS PUTIH / BORDER KOTAK */
-  .fc-theme-standard .fc-scrollgrid,
-  .fc-theme-standard td, 
-  .fc-theme-standard th {
-    border: none !important;
-  }
-
-  /* Header Hari (Sen, Sel, Rab...) */
-  .fc-col-header-cell-cushion {
-    text-decoration: none !important;
-    color: #64748b; /* Slate-500 */
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    font-weight: 800;
-    padding-bottom: 20px !important; /* Jarak ke tanggal */
-  }
-
-  /* Angka Tanggal */
-  .fc-daygrid-day-number {
-    color: #94a3b8;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-decoration: none !important;
-    margin: 8px !important;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-    position: relative;
-    z-index: 2;
-  }
-
-  /* Hover pada tanggal */
-  .fc-daygrid-day:hover .fc-daygrid-day-number {
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
-  }
-
-  /* Styling "HARI INI" yang Modern */
-  .fc .fc-daygrid-day.fc-day-today {
-    background: transparent !important; /* Hilangkan background kotak */
-  }
-  
-  .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-    background: #3b82f6;
-    color: white;
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-    font-weight: 800;
-  }
-
-  /* Toolbar (Judul Bulan & Tombol) */
-  .fc-header-toolbar {
-    margin-bottom: 2rem !important;
-    padding: 0 10px;
-  }
-  
-  .fc-toolbar-title {
-    font-size: 1.5rem !important;
-    font-weight: 800 !important;
-    letter-spacing: -0.02em;
-  }
-
-  .fc-button {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid var(--glass-border) !important;
-    border-radius: 12px !important;
-    font-weight: 600 !important;
-    text-transform: capitalize !important;
-    font-size: 0.85rem !important;
-    box-shadow: none !important;
-    transition: all 0.2s !important;
-  }
-
-  .fc-button:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
-  }
-
-  .fc-button-active {
-    background: #3b82f6 !important;
-    border-color: #3b82f6 !important;
-    color: white !important;
-  }
-
-  /* Events Pill Styling */
-  .fc-event {
-    cursor: pointer;
-    border: none !important;
-    background: transparent !important;
-    margin-top: 4px;
-  }
-
-  .custom-event-pill {
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: transform 0.2s;
-    width: fit-content;
-  }
-  .custom-event-pill:hover { transform: translateY(-2px); }
-  
-  .pill-admin {
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    color: #93c5fd;
-  }
-  .pill-user {
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    color: #6ee7b7;
-  }
-
-  /* 3. SCROLL & CARD AREA */
-  .log-scroll-container {
-    height: 600px;
-    overflow-y: auto;
-    padding-right: 8px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-  .custom-scrollbar::-webkit-scrollbar-thumb { 
-    background: rgba(255, 255, 255, 0.1); 
-    border-radius: 10px; 
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
-
-  .log-card {
-    background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 16px;
-    padding: 16px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-  .log-card:hover {
-    border-color: rgba(59, 130, 246, 0.3);
-    transform: translateX(5px);
-    background: rgba(255,255,255,0.04);
-  }
-
-  /* Tooltip Modern */
-  #tooltip {
-    position: absolute;
-    display: none;
-    z-index: 50;
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 16px;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px -10px rgba(0,0,0,0.6);
-    pointer-events: none;
-    min-width: 180px;
-    animation: scaleIn 0.2s ease-out;
-  }
-  @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-  }
-</style>
-{% endblock %}
-
-{% block content %}
-<main class="max-w-7xl mx-auto p-6 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[calc(100vh-100px)]">
-  
+{% endblock %} {% block content %}
+<main
+  class="max-w-7xl mx-auto p-6 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[calc(100vh-100px)]"
+>
   <div class="lg:col-span-8 animate-modern" style="animation-delay: 0.1s">
-    <div class="blue-glass p-8 border-white/5 relative h-full min-h-[700px] flex flex-col rounded-[2.5rem]">
-      <div class="absolute -top-40 -left-40 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
-      
+    <div
+      class="blue-glass p-8 border-white/5 relative h-full min-h-[700px] flex flex-col rounded-[2.5rem]"
+    >
+      <div
+        class="absolute -top-40 -left-40 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"
+      ></div>
+
       <div id="calendar" class="relative z-10 flex-grow"></div>
     </div>
   </div>
 
-  <div class="lg:col-span-4 flex flex-col gap-6 animate-modern" style="animation-delay: 0.2s">
-    
-    <div class="blue-glass p-8 border-white/10 relative overflow-hidden rounded-[2rem]">
+  <div
+    class="lg:col-span-4 flex flex-col gap-6 animate-modern"
+    style="animation-delay: 0.2s"
+  >
+    <div
+      class="blue-glass p-8 border-white/10 relative overflow-hidden rounded-[2rem]"
+    >
       <div class="absolute top-0 right-0 p-8 opacity-20">
         <i data-lucide="bar-chart-2" class="w-24 h-24 text-blue-400"></i>
       </div>
       <div class="relative z-10">
-        <span class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Total Activities</span>
+        <span
+          class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500"
+          >Total Activities</span
+        >
         <div class="flex items-end justify-between mt-2">
-          <h2 class="text-4xl font-black text-white tracking-tight leading-none">
+          <h2
+            class="text-4xl font-black text-white tracking-tight leading-none"
+          >
             {{ logs|length }}<span class="text-2xl text-slate-500 ml-1">x</span>
           </h2>
-          
+
           {% if session.get('logged_in') %}
-          <button onclick="deleteAllLogs()" class="group flex items-center justify-center w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500 hover:scale-105 transition-all" title="Bersihkan Semua">
-            <i data-lucide="trash" class="w-4 h-4 text-red-400 group-hover:text-white"></i>
+          <button
+            onclick="deleteAllLogs()"
+            class="group flex items-center justify-center w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500 hover:scale-105 transition-all"
+            title="Bersihkan Semua"
+          >
+            <i
+              data-lucide="trash"
+              class="w-4 h-4 text-red-400 group-hover:text-white"
+            ></i>
           </button>
           {% endif %}
         </div>
@@ -238,38 +64,53 @@
       {% for log in logs %}
       <div class="log-card group" id="log-{{ log.id }}">
         <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-lg">
+          <div
+            class="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-lg"
+          >
             <i data-lucide="user" class="w-5 h-5"></i>
           </div>
-          
+
           <div class="flex-1 min-w-0">
-            <h4 class="text-sm font-bold text-white truncate">{{ log.nama }}</h4>
+            <h4 class="text-sm font-bold text-white truncate">
+              {{ log.nama }}
+            </h4>
             <div class="flex items-center gap-2 mt-1">
               <i data-lucide="calendar" class="w-3 h-3 text-slate-500"></i>
-              <span class="text-[11px] text-slate-500 font-medium">{{ log.tanggal }}</span>
+              <span class="text-[11px] text-slate-500 font-medium"
+                >{{ log.tanggal }}</span
+              >
             </div>
           </div>
 
           <div class="flex flex-col items-end gap-1">
-            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-lg border border-emerald-400/10">
+            <span
+              class="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-lg border border-emerald-400/10"
+            >
               {{ log.waktu }}
             </span>
             {% if session.get('logged_in') %}
-            <button onclick="deleteLog('{{ log.id }}')" class="opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300 text-xs text-red-400 hover:text-red-300 flex items-center gap-1 mt-1">
+            <button
+              onclick="deleteLog('{{ log.id }}')"
+              class="opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300 text-xs text-red-400 hover:text-red-300 flex items-center gap-1 mt-1"
+            >
               Hapus <i data-lucide="x" class="w-3 h-3"></i>
             </button>
             {% endif %}
           </div>
         </div>
       </div>
-      {% endfor %}
-
-      {% if logs|length == 0 %}
-      <div class="h-full flex flex-col items-center justify-center text-center p-10 border-2 border-dashed border-white/5 rounded-3xl">
-        <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
+      {% endfor %} {% if logs|length == 0 %}
+      <div
+        class="h-full flex flex-col items-center justify-center text-center p-10 border-2 border-dashed border-white/5 rounded-3xl"
+      >
+        <div
+          class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4"
+        >
           <i data-lucide="inbox" class="w-8 h-8 text-slate-600"></i>
         </div>
-        <p class="text-slate-500 text-sm font-medium">Belum ada data riwayat.</p>
+        <p class="text-slate-500 text-sm font-medium">
+          Belum ada data riwayat.
+        </p>
       </div>
       {% endif %}
     </div>
@@ -278,109 +119,12 @@
   <div id="tooltip">
     <div class="flex items-center gap-2 mb-3 border-b border-white/10 pb-2">
       <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-      <p id="tooltip-name" class="text-xs font-bold text-white uppercase tracking-wider"></p>
+      <p
+        id="tooltip-name"
+        class="text-xs font-bold text-white uppercase tracking-wider"
+      ></p>
     </div>
     <div id="tooltip-time" class="space-y-2"></div>
   </div>
 </main>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-  // --- LOGIC TETAP SAMA ---
-  function deleteLog(logId) {
-    if (!confirm("Hapus data ini dari riwayat?")) return;
-    fetch(`/delete_log/${logId}`, { method: "POST" })
-      .then(r => r.json())
-      .then(d => {
-        if (d.status === "success") {
-          const card = document.getElementById(`log-${logId}`);
-          // Animasi hapus
-          card.style.transform = 'translateX(20px)';
-          card.style.opacity = '0';
-          setTimeout(() => {
-            card.remove();
-            if(window.calendarInstance) window.calendarInstance.refetchEvents();
-          }, 300);
-        }
-      });
-  }
-
-  function deleteAllLogs() {
-    if (confirm("PERINGATAN: Semua data akan dihapus permanen!")) {
-      window.location.href = "/clear_logs";
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    lucide.createIcons();
-    const calendarEl = document.getElementById("calendar");
-    const tooltip = document.getElementById("tooltip");
-
-    window.calendarInstance = new FullCalendar.Calendar(calendarEl, {
-      initialView: "dayGridMonth",
-      locale: "id",
-      height: "100%", // Mengisi parent container
-      headerToolbar: { left: "prev,next", center: "title", right: "today" }, // Layout Toolbar Modern
-      events: "/api/calendar_events",
-      
-      // Render Event Custom (Pills)
-      eventContent: function (arg) {
-        const p = arg.event.extendedProps;
-        const isAdm = p.is_admin;
-        const cssClass = isAdm ? "pill-admin" : "pill-user";
-        const iconName = isAdm ? "users" : "check-circle";
-        const text = isAdm ? `${p.count} User` : "Hadir";
-        
-        return { 
-          html: `
-            <div class="custom-event-pill ${cssClass}">
-              <i data-lucide="${iconName}" style="width:12px; height:12px;"></i>
-              <span>${text}</span>
-            </div>
-          ` 
-        };
-      },
-      
-      eventDidMount: () => lucide.createIcons(),
-      
-      // Tooltip Logic
-      eventMouseEnter: function (info) {
-        const p = info.event.extendedProps;
-        const nameEl = document.getElementById("tooltip-name");
-        const contentEl = document.getElementById("tooltip-time");
-        
-        nameEl.innerText = p.is_admin ? "Rekap Harian" : p.nama;
-        
-        if (p.is_admin) {
-          let html = "";
-          (p.users || []).forEach(u => {
-            html += `
-              <div class="flex justify-between items-center text-[10px] text-slate-300">
-                <span>${u.nama}</span>
-                <span class="font-mono text-blue-400">${u.waktu}</span>
-              </div>`;
-          });
-          contentEl.innerHTML = html || '<span class="text-slate-500 text-[10px]">Kosong</span>';
-        } else {
-          contentEl.innerHTML = `<div class="text-xs text-slate-400">Waktu Absen: <span class="text-white font-mono">${p.waktu}</span></div>`;
-        }
-
-        // Positioning Tooltip
-        tooltip.style.display = "block";
-        const rect = info.el.getBoundingClientRect();
-        // Center tooltip above event
-        const top = rect.top + window.scrollY - tooltip.offsetHeight - 10;
-        const left = rect.left + window.scrollX + (rect.width / 2) - (tooltip.offsetWidth / 2);
-        
-        tooltip.style.top = `${top}px`;
-        tooltip.style.left = `${left}px`;
-      },
-      
-      eventMouseLeave: () => tooltip.style.display = "none"
-    });
-
-    window.calendarInstance.render();
-  });
-</script>
-{% endblock %}
+{% endblock %} {% block extra_scripts %}{% endblock %}

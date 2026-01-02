@@ -164,3 +164,220 @@ body {
 #btnSubmit {
   min-height: 64px;
 }
+
+/* --- History Styles (riwayat.html) --- */
+:root {
+  --glass-border: rgba(255, 255, 255, 0.05);
+}
+
+/* 1. ANIMASI LOAD */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-modern {
+  animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* 2. FULLCALENDAR MODERN OVERRIDE */
+.fc {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: white;
+}
+
+/* HILANGKAN GARIS PUTIH / BORDER KOTAK */
+.fc-theme-standard .fc-scrollgrid,
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border: none !important;
+}
+
+/* Header Hari (Sen, Sel, Rab...) */
+.fc-col-header-cell-cushion {
+  text-decoration: none !important;
+  color: #64748b; /* Slate-500 */
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  padding-bottom: 20px !important; /* Jarak ke tanggal */
+}
+
+/* Angka Tanggal */
+.fc-daygrid-day-number {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  margin: 8px !important;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+/* Hover pada tanggal */
+.fc-daygrid-day:hover .fc-daygrid-day-number {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+/* Styling "HARI INI" yang Modern */
+.fc .fc-daygrid-day.fc-day-today {
+  background: transparent !important; /* Hilangkan background kotak */
+}
+
+.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  background: #3b82f6;
+  color: white;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+  font-weight: 800;
+}
+
+/* Toolbar (Judul Bulan & Tombol) */
+.fc-header-toolbar {
+  margin-bottom: 2rem !important;
+  padding: 0 10px;
+}
+
+.fc-toolbar-title {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em;
+}
+
+.fc-button {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  text-transform: capitalize !important;
+  font-size: 0.85rem !important;
+  box-shadow: none !important;
+  transition: all 0.2s !important;
+}
+
+.fc-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.fc-button-active {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: white !important;
+}
+
+/* Events Pill Styling */
+.fc-event {
+  cursor: pointer;
+  border: none !important;
+  background: transparent !important;
+  margin-top: 4px;
+}
+
+.custom-event-pill {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.2s;
+  width: fit-content;
+}
+.custom-event-pill:hover {
+  transform: translateY(-2px);
+}
+
+.pill-admin {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+}
+.pill-user {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #6ee7b7;
+}
+
+/* 3. SCROLL & CARD AREA */
+.log-scroll-container {
+  height: 600px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.log-card {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.log-card:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Tooltip Modern */
+#tooltip {
+  position: absolute;
+  display: none;
+  z-index: 50;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  min-width: 180px;
+  animation: scaleIn 0.2s ease-out;
+}
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
