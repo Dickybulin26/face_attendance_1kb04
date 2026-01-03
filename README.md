@@ -1,3 +1,4 @@
+
 # AbsensiPro: Face Recognition Attendance System
 
 **Sistem Absensi Berbasis Pengenalan Wajah dengan Antarmuka Modern Dark Glassmorphism.**
@@ -30,7 +31,7 @@ Sistem ini mengintegrasikan metodologi Computer Vision yang berfokus pada ketaha
 Berdasarkan paper Optimalisasi Deteksi Wajah Dlib-HOG, tantangan utama deteksi adalah rendahnya kontras pada citra. Sistem ini menerapkan CLAHE untuk mendistribusikan ulang nilai intensitas piksel secara adaptif.
 
 Berbeda dengan Histogram Equalization (HE) standar yang menggunakan transformasi global:
-$$s=T(r)=∫0r​pr​(w)dw$$
+### $$s=T(r)=∫0r​pr​(w)dw$$
 
 CLAHE membatasi penguatan kontras dengan memotong histogram pada ambang batas (clip limit) tertentu untuk menghindari amplifikasi noise. Nilai piksel baru dihitung secara interpolasi antar ubin (tiles) lokal, sehingga menghasilkan citra yang lebih jelas bagi algoritma HOG untuk mengekstraksi fitur wajah meski dalam kondisi cahaya redup (meningkatkan akurasi hingga 96,4%).
 2. Deteksi Wajah: Histogram of Oriented Gradients (HOG)
@@ -38,10 +39,12 @@ CLAHE membatasi penguatan kontras dengan memotong histogram pada ambang batas (c
 Sistem menggunakan Dlib-HOG yang bekerja dengan menangkap struktur bentuk (garis dan tepi) wajah. Proses matematisnya meliputi:
 
 Perhitungan Gradien: Menghitung besarnya perubahan intensitas pada sumbu x dan y menggunakan kernel filter:
-$$Gx=I(x+1,y)−I(x−1,y)danGy=I(x,y+1)−I(x,y−1)$$
+
+### $$Gx=I(x+1,y)−I(x−1,y)$$
+### $$Gy=I(x,y+1)−I(x,y−1)$$
 
 Magnitudo dan Orientasi: Menentukan kekuatan tepi dan arah sudutnya:
-$$Magnitude ∣G∣=Gx2+Gy2​​,θ=arctan(GxGy​​)$$
+### $$Magnitude ∣G∣=Gx2+Gy2​​,θ=arctan(GxGy​​)$$
 
 Vektorisasi: Nilai-nilai ini dikelompokkan ke dalam sel dan blok untuk membentuk deskriptor fitur yang tahan terhadap perubahan cahaya global.
 
@@ -52,7 +55,7 @@ Setelah wajah terdeteksi, sistem menggunakan Deep Metric Learning untuk mengubah
 Landmark Detection: Mengidentifikasi 68 titik kunci (eyes, eyebrows, nose, mouth, jawline).
 
 Euclidean Distance: Untuk mengenali wajah, sistem menghitung jarak antara vektor wajah input (d) dengan vektor wajah yang tersimpan di database (k). Identitas dikonfirmasi jika jaraknya berada di bawah ambang batas (threshold):
-$$dist(d,k)=i=1∑n​(di​−ki​)2$$
+### $$dist(d,k)=i=1∑n​(di​−ki​)^2$$
 
 Di mana n=128. Jika dist<0.6, maka wajah dianggap cocok (match).
 
