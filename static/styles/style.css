@@ -260,6 +260,13 @@ body {
   letter-spacing: -0.02em;
 }
 
+.fc .fc-button-group {
+  display: inline-flex;
+  position: relative;
+  vertical-align: middle;
+  gap: 1rem !important;
+}
+
 .fc-button {
   background: rgba(255, 255, 255, 0.03) !important;
   border: 1px solid var(--glass-border) !important;
