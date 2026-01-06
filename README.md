@@ -104,36 +104,12 @@ MONGO_URI = "mongodb+srv://USER:PASSWORD@cluster.mongodb.net/db_absensi"
 
 
 3. **Jalankan Aplikasi**
-git clone https://github.com/Dickybulin26/face_attendance_1kb04.git
-cd face_attendance_1kb04
-```
-
-
-2. **Konfigurasi Database**
-Edit `app.py` dan masukkan URI MongoDB Atlas Anda:
-```python
-MONGO_URI = "mongodb+srv://USER:PASSWORD@cluster.mongodb.net/db_absensi"
-```
-
-
-3. **Jalankan Aplikasi**
 ```bash
 pip install -r requirements.txt
 python app.py
 ```
 
 
-
-### Instalasi via Docker
-
-```bash
-docker-compose build --no-cache
-docker-compose up -d
-python app.py
-```
-
-
-
 ### Instalasi via Docker
 
 ```bash
@@ -149,21 +125,11 @@ docker-compose up -d
 2. **Pendaftaran**: Masuk ke menu **Admin > Tambah Wajah**. Ambil foto wajah dengan pencahayaan yang cukup.
 3. **Absensi**: Kembali ke Dashboard, sistem akan otomatis melakukan scanning. Jika wajah dikenali, status "Berhasil Absen" akan muncul.
 4. **Riwayat**: Pantau kehadiran di tabel **Riwayat**. Admin memiliki otoritas untuk menghapus log jika terjadi kesalahan.
-## Cara Penggunaan
-
-1. Akses aplikasi di `http://localhost:1324` (atau URL Ngrok jika di-deploy).
-2. **Pendaftaran**: Masuk ke menu **Admin > Tambah Wajah**. Ambil foto wajah dengan pencahayaan yang cukup.
-3. **Absensi**: Kembali ke Dashboard, sistem akan otomatis melakukan scanning. Jika wajah dikenali, status "Berhasil Absen" akan muncul.
-4. **Riwayat**: Pantau kehadiran di tabel **Riwayat**. Admin memiliki otoritas untuk menghapus log jika terjadi kesalahan.
 
 ---
 
 ## Catatan Teknis
-## Catatan Teknis
 
-* **Kualitas Kamera**: Gunakan kamera dengan resolusi minimal 720p untuk hasil terbaik.
-* **Pencahayaan**: Pastikan wajah menghadap sumber cahaya saat pendaftaran.
-* **Keamanan**: Data wajah diproses secara lokal di server sebelum dikirim ke database dalam bentuk log teks (bukan gambar mentah), sehingga menjaga privasi pengguna.
 * **Kualitas Kamera**: Gunakan kamera dengan resolusi minimal 720p untuk hasil terbaik.
 * **Pencahayaan**: Pastikan wajah menghadap sumber cahaya saat pendaftaran.
 * **Keamanan**: Data wajah diproses secara lokal di server sebelum dikirim ke database dalam bentuk log teks (bukan gambar mentah), sehingga menjaga privasi pengguna.
