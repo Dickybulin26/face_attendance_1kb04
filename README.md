@@ -102,10 +102,19 @@ Edit `app.py` dan masukkan URI MongoDB Atlas Anda:
 MONGO_URI = "mongodb+srv://USER:PASSWORD@cluster.mongodb.net/db_absensi"
 ```
 
+3. **Membuat Virtual Environment**
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
 
-3. **Jalankan Aplikasi**
+4. **Instalasi Dependencies**
 ```bash
 pip install -r requirements.txt
+```
+
+5. **Jalankan Aplikasi**
+```bash
 python app.py
 ```
 

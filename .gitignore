@@ -5,3 +5,4 @@ env
 __pycache__
 .pytest_cache
 credentials.json
+__pycache__/face_engine.cpython-313.pyc

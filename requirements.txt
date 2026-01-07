@@ -7,4 +7,5 @@ Pillow
 face-recognition
 pytest
 pytest-mock
-
+gspread
+oauth2client
