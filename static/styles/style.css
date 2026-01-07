@@ -1,449 +1,332 @@
-/* --- Global Styles (base.html) --- */
+/* --- Core Configuration & Variables --- */
 :root {
-  --bg-deep: #020617;
-  --accent: #3b82f6;
+    --bg-deep: #020617;
+    --bg-card: #0f172a;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59, 130, 246, 0.5);
+    --border-tech: rgba(59, 130, 246, 0.15);
+    --glass: rgba(30, 41, 59, 0.4);
+    --text-dim: #94a3b8;
 }
 
+/* --- Global Reset & Base --- */
 body {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  background-color: var(--bg-deep);
-  color: #f8fafc;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+    font-family: "Plus Jakarta Sans", "JetBrains Mono", sans-serif;
+    background-color: var(--bg-deep);
+    color: #f8fafc;
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
 }
 
+/* --- Unified Tech Scrollbar (Global) --- */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, var(--accent), #1d4ed8);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #60a5fa;
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* --- Animations --- */
 .page-animate {
-  animation: pageReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: pageReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes pageReveal {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-    filter: blur(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
-}
-
-.blue-glass {
-  background: rgba(30, 41, 59, 0.4);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 24px;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-
-/* --- Scanner Styles (index.html) --- */
-.laser-line {
-  position: absolute;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    #fff,
-    #3b82f6,
-    #fff,
-    transparent
-  );
-  box-shadow: 0 0 15px #3b82f6;
-  animation: scan-move 0.6s linear infinite;
-  z-index: 25;
+    from { opacity: 0; transform: translateY(10px); filter: blur(5px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 
 @keyframes scan-move {
-  0% {
-    top: 0%;
-  }
-  100% {
-    top: 100%;
-  }
-}
-
-#face-guideline {
-  position: absolute;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  border-radius: 20px;
-  pointer-events: none;
-  transition: all 0.05s ease-out;
-  z-index: 20;
-}
-
-.video-container {
-  position: relative;
-  border-radius: 24px;
-  overflow: hidden;
-  background: #000;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* --- Registration Styles (tambah_wajah.html) --- */
-.page-entrance {
-  animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes slideUpFade {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-    filter: blur(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
-}
-
-.nav-pill {
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.nav-pill.active {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-[hidden] {
-  display: none !important;
-}
-
-.method-section {
-  animation: fadeIn 0.4s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.loader-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.loader-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-top-color: #ffffff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-#btnSubmit {
-  min-height: 64px;
-}
-
-/* --- History Styles (riwayat.html) --- */
-:root {
-  --glass-border: rgba(255, 255, 255, 0.05);
-}
-
-/* 1. ANIMASI LOAD */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-    filter: blur(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
-}
-
-.animate-modern {
-  animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-
-/* 2. FULLCALENDAR MODERN OVERRIDE */
-.fc {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  color: white;
-}
-
-/* HILANGKAN GARIS PUTIH / BORDER KOTAK */
-.fc-theme-standard .fc-scrollgrid,
-.fc-theme-standard td,
-.fc-theme-standard th {
-  border: none !important;
-}
-
-/* Header Hari (Sen, Sel, Rab...) */
-.fc-col-header-cell-cushion {
-  text-decoration: none !important;
-  color: #64748b; /* Slate-500 */
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  font-weight: 800;
-  padding-bottom: 20px !important; /* Jarak ke tanggal */
-}
-
-/* Angka Tanggal */
-.fc-daygrid-day-number {
-  color: #94a3b8;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none !important;
-  margin: 8px !important;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  position: relative;
-  z-index: 2;
-}
-
-/* Hover pada tanggal */
-.fc-daygrid-day:hover .fc-daygrid-day-number {
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-}
-
-/* Styling "HARI INI" yang Modern */
-.fc .fc-daygrid-day.fc-day-today {
-  background: transparent !important; /* Hilangkan background kotak */
-}
-
-.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-  background: #3b82f6;
-  color: white;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-  font-weight: 800;
-}
-
-/* Toolbar (Judul Bulan & Tombol) */
-.fc-header-toolbar {
-  margin-bottom: 2rem !important;
-  padding: 0 10px;
-}
-
-.fc-toolbar-title {
-  font-size: 1.5rem !important;
-  font-weight: 800 !important;
-  letter-spacing: -0.02em;
-}
-
-.fc .fc-button-group {
-  display: inline-flex;
-  position: relative;
-  vertical-align: middle;
-  gap: 1rem !important;
-}
-
-.fc-button {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 12px !important;
-  font-weight: 600 !important;
-  text-transform: capitalize !important;
-  font-size: 0.85rem !important;
-  box-shadow: none !important;
-  transition: all 0.2s !important;
-}
-
-.fc-button:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-.fc-button-active {
-  background: #3b82f6 !important;
-  border-color: #3b82f6 !important;
-  color: white !important;
-}
-
-/* Events Pill Styling */
-.fc-event {
-  cursor: pointer;
-  border: none !important;
-  background: transparent !important;
-  margin-top: 4px;
-}
-
-.custom-event-pill {
-  padding: 4px 8px;
-  border-radius: 8px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: transform 0.2s;
-  width: fit-content;
-}
-.custom-event-pill:hover {
-  transform: translateY(-2px);
-}
-
-.pill-admin {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: #93c5fd;
-}
-.pill-user {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #6ee7b7;
-}
-
-/* 3. SCROLL & CARD AREA */
-.log-scroll-container {
-  height: 600px;
-  overflow-y: auto;
-  padding-right: 8px;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.log-card {
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.03) 0%,
-    rgba(255, 255, 255, 0.01) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 16px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-.log-card:hover {
-  border-color: rgba(59, 130, 246, 0.3);
-  transform: translateX(5px);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-/* Tooltip Modern */
-#tooltip {
-  position: absolute;
-  display: none;
-  z-index: 50;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 16px;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.6);
-  pointer-events: none;
-  min-width: 180px;
-  animation: scaleIn 0.2s ease-out;
-}
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* --- Modern Tech & Search Bar Styles --- */
-.search-container {
-    position: relative;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.search-input {
-    background: rgba(15, 23, 42, 0.6) !important;
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-    transition: all 0.4s ease;
-}
-
-.search-input:focus {
-    border-color: rgba(59, 130, 246, 0.5) !important;
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.3);
-    background: rgba(15, 23, 42, 0.8) !important;
-}
-
-/* Row Animation & Glow */
-.user-row {
-    position: relative;
-    border: 1px solid transparent;
-    transition: all 0.3s ease;
-}
-
-.user-row:hover {
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
-    border-color: rgba(59, 130, 246, 0.2) !important;
-    transform: translateX(8px);
-}
-
-/* Modern Scrollbar for Tech Look */
-.tech-scroll::-webkit-scrollbar {
-    width: 4px;
-}
-
-.tech-scroll::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.02);
-}
-
-.tech-scroll::-webkit-scrollbar-thumb {
-    background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-}
-
-/* Empty State Style */
-.empty-state {
-    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
-    animation: pulse 2s infinite;
+    0% { top: 0%; }
+    100% { top: 100%; }
 }
 
 @keyframes pulse {
     0%, 100% { opacity: 0.5; }
     50% { opacity: 1; }
+}
+
+/* --- Containers & Glassmorphism --- */
+.blue-glass {
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+}
+
+.blue-glass-light {
+    background: var(--bg-card);
+    border: 1px solid var(--border-tech);
+    border-radius: 16px;
+}
+
+/* --- Face Scanner (index.html) --- */
+.video-container {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid var(--border-tech);
+}
+
+.laser-line {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #fff, var(--accent), #fff, transparent);
+    box-shadow: 0 0 15px var(--accent);
+    animation: scan-move 1.5s linear infinite;
+    z-index: 25;
+}
+
+/* --- UI Elements (Buttons & Search) --- */
+.search-input {
+    background: rgba(15, 23, 42, 0.6) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-tech) !important;
+    color: white !important;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    outline: none;
+}
+
+/* --- Tech Table Style (FIXED OFFSIDE) --- */
+.tech-table-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-tech);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.tech-scroll {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.tech-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 50; /* Pastikan di atas row */
+}
+
+.tech-table thead th {
+    /* FIX: Background harus solid agar data tidak tembus (offside) saat scroll */
+    background-color: #0f172a !important; 
+    border-bottom: 1px solid var(--border-tech);
+    color: var(--text-dim);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 16px 24px;
+}
+
+.tech-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    transition: all 0.2s ease;
+}
+
+.tech-table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.04);
+}
+
+/* --- FOTO USER STYLING --- */
+.user-row img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    image-rendering: auto;
+}
+
+/* --- PERFECT HUD CALENDAR --- */
+.fc {
+    --fc-border-color: transparent;
+    --fc-button-bg-color: rgba(30, 41, 59, 0.5);
+    --fc-button-border-color: rgba(59, 130, 246, 0.2);
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+.fc-theme-standard .fc-scrollgrid, .fc-theme-standard td, .fc-theme-standard th {
+    border: none !important;
+}
+
+.fc-col-header-cell-cushion {
+    font-size: 9px !important;
+    color: var(--text-dim) !important;
+    text-transform: uppercase;
+    text-decoration: none !important;
+}
+
+.fc-daygrid-day-number {
+    font-size: 10px !important;
+    color: #475569 !important;
+    text-decoration: none !important;
+}
+
+.fc-day-today {
+    background: rgba(59, 130, 246, 0.1) !important;
+    border-radius: 8px;
+}
+
+.fc-toolbar-title {
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    color: var(--accent) !important;
+    text-transform: uppercase;
+}
+
+.fc-button {
+    font-size: 9px !important;
+    text-transform: uppercase !important;
+    border-radius: 6px !important;
+}
+
+/* Dot Glow Indikator */
+.tech-dot {
+    width: 5px;
+    height: 5px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent-glow);
+    margin: 0 auto;
+}
+
+/* --- Calendar Hover Tooltip (FIXED POSITION) --- */
+#calendar-tooltip {
+    position: fixed; /* FIXED agar mengikuti layar, bukan container */
+    display: none;
+    z-index: 99999; /* Z-index tertinggi */
+    background: rgba(2, 6, 23, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--accent);
+    padding: 12px;
+    border-radius: 12px;
+    min-width: 180px;
+    pointer-events: none;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+    left: 0;
+    top: 0;
+}
+
+.tooltip-header {
+    font-size: 9px;
+    font-weight: 900;
+    color: #60a5fa;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+/* --- Modern Face Scanner HUD --- */
+.video-container {
+    position: relative;
+    border-radius: 32px;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid var(--border-tech);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+}
+
+.scanner-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, transparent 40%, rgba(2, 6, 23, 0.6) 100%);
+    z-index: 30;
+}
+
+.face-guideline {
+    position: relative;
+    width: 280px;  /* Sesuaikan ukuran kotak */
+    height: 280px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 40px;
+}
+
+/* Sudut Kotak (Corners) */
+.corner {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border: 3px solid var(--accent);
+    border-radius: 10px;
+}
+
+.top-left { top: -5px; left: -5px; border-right: 0; border-bottom: 0; }
+.top-right { top: -5px; right: -5px; border-left: 0; border-bottom: 0; }
+.bottom-left { bottom: -5px; left: -5px; border-right: 0; border-top: 0; }
+.bottom-right { bottom: -5px; right: -5px; border-left: 0; border-top: 0; }
+
+/* Loading Ring Animation */
+.loading-ring {
+    position: absolute;
+    inset: -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--accent);
+    border-radius: 50px;
+    animation: rotate-loading 2s linear infinite;
+    opacity: 0.8;
+}
+
+@keyframes rotate-loading {
+    0% { transform: rotate(0deg); border-top-color: var(--accent); }
+    50% { border-top-color: #60a5fa; }
+    100% { transform: rotate(360deg); border-top-color: var(--accent); }
+}
+
+/* Status Text HUD */
+.scan-status {
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(8px);
+    padding: 8px 20px;
+    border-radius: 100px;
+    border: 1px solid var(--border-tech);
+    white-space: nowrap;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+}
+
+.status-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
