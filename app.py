@@ -6,9 +6,11 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from face_engine import FaceEngine
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "kunci_rahasia_sistem_absensi_pro"
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 # ============================================
 # 1. FUNGSI GOOGLE SHEETS
@@ -17,11 +19,11 @@ def log_to_sheets(user_name, user_id):
     try:
         # Setup koneksi
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name(os.getenv("GOOGLE_SHEETS_CREDENTIALS"), scope)
         client = gspread.authorize(creds)
 
         # Buka spreadsheet (Pastikan nama file di Google Drive SAMA PERSIS)
-        sheet = client.open("Data Absensi AbsensiPro").sheet1
+        sheet = client.open(os.getenv("GOOGLE_SHEETS_NAME")).sheet1
 
         # Siapkan data
         now = datetime.now()
@@ -40,7 +42,7 @@ def log_to_sheets(user_name, user_id):
 # ============================================
 # 2. KONEKSI DATABASE & ENGINE
 # ============================================
-MONGO_URI = "mongodb+srv://ayerell:farell240507@cluster0.iepzxdd.mongodb.net/?appName=Cluster0"
+MONGO_URI = os.getenv("MONGO_URI")
 
 try:
     client = MongoClient(MONGO_URI)
@@ -127,7 +129,8 @@ def edit_user(id):
     try:
         users_collection.update_one({"_id": ObjectId(id)}, {"$set": {"nama": new_nama}})
         return jsonify({"status": "success"})
-    except: return jsonify({"status": "error"})
+    except: 
+        return jsonify({"status": "error"})
 
 @app.route('/delete_user/<id>', methods=['POST'])
 def delete_user(id):
@@ -135,7 +138,8 @@ def delete_user(id):
     try:
         users_collection.delete_one({"_id": ObjectId(id)})
         return jsonify({"status": "success"})
-    except: return jsonify({"status": "error"})
+    except: 
+        return jsonify({"status": "error"})
 
 @app.route('/delete_log/<id>', methods=['POST'])
 def delete_log(id):
@@ -143,7 +147,8 @@ def delete_log(id):
     try:
         collection.delete_one({"_id": ObjectId(id)})
         return jsonify({"status": "success"})
-    except: return jsonify({"status": "error"})
+    except: 
+        return jsonify({"status": "error"})
 
 @app.route('/clear_logs')
 def clear_logs():
@@ -236,4 +241,6 @@ def calendar_events():
     return jsonify(events)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=1324, debug=True)
+    app.host = os.getenv("FLASK_HOST")
+    app.port = os.getenv("FLASK_PORT")
+    app.run(debug=os.getenv("FLASK_DEBUG"))
