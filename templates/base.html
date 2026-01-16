@@ -23,25 +23,33 @@
     {% block head %}{% endblock %}
   </head>
   <body class="page-animate">
-    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
+    <nav
+      class="p-4 md:p-6 flex justify-between items-center max-w-7xl mx-auto w-full relative z-50"
+    >
       <div class="flex items-center gap-3">
         <div
-          class="w-11 h-11 bg-blue-600/10 rounded-2xl flex items-center justify-center border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+          class="w-10 h-10 md:w-11 md:h-11 bg-blue-600/10 rounded-2xl flex items-center justify-center border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
         >
-          <i data-lucide="shield-check" class="text-blue-400 w-6 h-6"></i>
+          <i
+            data-lucide="shield-check"
+            class="text-blue-400 w-5 h-5 md:w-6 md:h-6"
+          ></i>
         </div>
-        <div class="flex flex-col">
-          <span
-            class="font-black text-lg tracking-tighter uppercase leading-none"
-            >Absensi<span class="text-blue-500">Pro</span></span
-          >
-          <span
-            class="text-[8px] font-bold text-slate-500 tracking-[0.3em] uppercase"
-            >Security System</span
-          >
-        </div>
+        <a href="/">
+          <div class="flex flex-col">
+            <span
+              class="font-black text-base md:text-lg tracking-tighter uppercase leading-none"
+              >Absensi<span class="text-blue-500">Pro</span></span
+            >
+            <span
+              class="text-[7px] md:text-[8px] font-bold text-slate-500 tracking-[0.3em] uppercase"
+              >Security System</span
+            >
+          </div>
+        </a>
       </div>
 
+      <!-- Desktop Menu -->
       <div
         class="hidden md:flex gap-8 items-center text-[10px] font-black uppercase tracking-[0.2em]"
       >
@@ -74,6 +82,73 @@
           >Logout</a
         >
       </div>
+
+      <!-- Mobile Button -->
+      <button
+        id="mobile-menu-btn"
+        class="md:hidden text-slate-400 hover:text-blue-400 transition-colors"
+      >
+        <i data-lucide="menu" class="w-8 h-8"></i>
+      </button>
+
+      <!-- Mobile Menu Overlay -->
+      <div
+        id="mobile-menu"
+        class="fixed top-24 right-6 w-64 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-3xl p-6 flex flex-col gap-4 shadow-2xl z-[60] transform transition-all duration-300 origin-top-right translate-x-[150%] md:hidden"
+      >
+        <!-- Header Mobile Menu -->
+        <div
+          class="flex items-center justify-between border-b border-white/5 pb-4"
+        >
+          <span
+            class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+            >Menu Navigation</span
+          >
+          <button
+            id="close-menu-btn"
+            class="text-slate-400 hover:text-red-500 transition-colors"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div
+          class="flex flex-col gap-2 text-xs font-bold uppercase tracking-wider"
+        >
+          <a
+            href="/"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-500/10 hover:text-blue-400 text-slate-400 transition-all"
+          >
+            <i data-lucide="scan-face" class="w-4 h-4"></i> Scanner
+          </a>
+          <a
+            href="/riwayat"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-500/10 hover:text-blue-400 text-slate-400 transition-all"
+          >
+            <i data-lucide="history" class="w-4 h-4"></i> Riwayat
+          </a>
+          {% if session.get('role') == 'admin' %}
+          <a
+            href="/daftar_user"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-amber-500/10 hover:text-amber-400 text-slate-400 transition-all"
+          >
+            <i data-lucide="users" class="w-4 h-4"></i> Database
+          </a>
+          <a
+            href="/tambah_wajah"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-400 text-slate-400 transition-all"
+          >
+            <i data-lucide="user-plus" class="w-4 h-4"></i> Registrasi
+          </a>
+          {% endif %}
+          <a
+            href="/logout"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 hover:text-red-500 text-slate-400 transition-all mt-2 border-t border-white/5"
+          >
+            <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+          </a>
+        </div>
+      </div>
     </nav>
 
     <div class="flex-1">{% block content %}{% endblock %}</div>
@@ -82,9 +157,11 @@
       class="max-w-7xl mx-auto w-full px-6 py-10 mt-10 border-t border-white/5"
     >
       <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-        <div class="flex items-center gap-4">
+        <div
+          class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left"
+        >
           <div
-            class="w-10 h-10 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-center"
+            class="w-10 h-10 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-center shrink-0"
           >
             <i data-lucide="code-2" class="w-5 h-5 text-blue-400"></i>
           </div>
@@ -102,7 +179,7 @@
             </p>
           </div>
         </div>
-        <div class="text-right">
+        <div class="text-center md:text-right">
           <span
             class="text-[10px] font-bold text-emerald-500 bg-emerald-500/5 px-3 py-1 rounded-full border border-emerald-500/10"
             >● SYSTEM ACTIVE</span

@@ -1,27 +1,30 @@
 {% extends "base.html" %} {% block title %}Pendaftaran - AbsensiPro{% endblock
 %} {% block content %}
-<main class="max-w-2xl mx-auto p-4 md:p-8 page-entrance">
+<main
+  class="max-w-2xl mx-auto p-4 md:p-8 page-entrance min-h-screen flex items-center justify-center"
+>
   <div
-    class="blue-glass p-8 md:p-10 border border-white/10 shadow-2xl rounded-[2.5rem] relative overflow-hidden"
+    class="blue-glass w-full p-6 md:p-10 border border-white/10 shadow-2xl rounded-[2rem] md:rounded-[2.5rem] relative overflow-hidden"
   >
     <div
       class="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 blur-[80px] rounded-full"
     ></div>
 
-    <div class="text-center mb-10">
+    <div class="text-center mb-8 md:mb-10">
       <div
-        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-4"
+        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] md:text-[10px] font-bold uppercase tracking-widest mb-4"
       >
         Registration System
       </div>
-      <h2 class="text-3xl font-black text-white tracking-tight">
+      <h2 class="text-2xl md:text-3xl font-black text-white tracking-tight">
         Daftar <span class="text-blue-400">Wajah</span>
       </h2>
     </div>
 
-    <form id="addFaceForm" class="space-y-8">
+    <form id="addFaceForm" class="space-y-6 md:space-y-8">
       <div class="space-y-2">
         <label
+          for="nama"
           class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1"
           >Nama Lengkap</label
         >
@@ -34,7 +37,7 @@
             type="text"
             id="nama"
             required
-            class="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-5 focus:outline-none focus:border-blue-500 transition-all text-white placeholder:text-slate-600"
+            class="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 md:py-5 focus:outline-none focus:border-blue-500 transition-all text-white placeholder:text-slate-600 text-sm"
             placeholder="Contoh: Farell"
           />
         </div>
@@ -47,24 +50,26 @@
           type="button"
           id="tabCam"
           onclick="switchUI('camera')"
-          class="nav-pill active flex-1 py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest"
+          class="nav-pill active flex-1 py-3 md:py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-[10px] md:text-xs uppercase tracking-widest"
         >
-          <i data-lucide="camera" class="w-4 h-4"></i> Ambil Gambar
+          <i data-lucide="camera" class="w-3.5 h-3.5 md:w-4 md:h-4"></i> Ambil
+          Gambar
         </button>
         <button
           type="button"
           id="tabUp"
           onclick="switchUI('upload')"
-          class="nav-pill flex-1 py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest text-slate-500"
+          class="nav-pill flex-1 py-3 md:py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-[10px] md:text-xs uppercase tracking-widest text-slate-500"
         >
-          <i data-lucide="upload" class="w-4 h-4"></i> Upload Foto
+          <i data-lucide="upload" class="w-3.5 h-3.5 md:w-4 md:h-4"></i> Upload
+          Foto
         </button>
       </div>
 
       <div class="relative">
         <div id="areaCamera" class="method-section">
           <div
-            class="relative aspect-video rounded-[2rem] overflow-hidden bg-black/40 border border-white/10 shadow-inner"
+            class="relative aspect-video rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-black/40 border border-white/10 shadow-inner"
           >
             <video
               id="video"
@@ -77,7 +82,7 @@
               class="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
               <div
-                class="w-48 h-64 border-2 border-white/10 border-dashed rounded-full"
+                class="w-36 h-48 md:w-48 md:h-64 border-2 border-white/10 border-dashed rounded-full"
               ></div>
             </div>
           </div>
@@ -86,7 +91,10 @@
         <div id="areaUpload" hidden class="method-section">
           <div
             onclick="document.getElementById('fileInput').click()"
-            class="relative aspect-video rounded-[2rem] border-2 border-dashed border-white/10 bg-white/5 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-500/5 transition-all group"
+            onkeydown="if(event.key === 'Enter') document.getElementById('fileInput').click()"
+            role="button"
+            tabindex="0"
+            class="relative aspect-video rounded-[1.5rem] md:rounded-[2rem] border-2 border-dashed border-white/10 bg-white/5 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-500/5 transition-all group"
           >
             <input
               type="file"
@@ -98,12 +106,16 @@
 
             <div id="placeholderUp" class="text-center">
               <div
-                class="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-400 group-hover:scale-110 transition-transform"
+                class="w-14 h-14 md:w-16 md:h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-400 group-hover:scale-110 transition-transform"
               >
-                <i data-lucide="image-plus" class="w-8 h-8"></i>
+                <i data-lucide="image-plus" class="w-6 h-6 md:w-8 md:h-8"></i>
               </div>
-              <p class="text-slate-300 font-bold text-sm">Pilih File Foto</p>
-              <p class="text-[10px] text-slate-500 uppercase mt-1">
+              <p class="text-slate-300 font-bold text-xs md:text-sm">
+                Pilih File Foto
+              </p>
+              <p
+                class="text-[9px] md:text-[10px] text-slate-500 uppercase mt-1"
+              >
                 Maksimal 5MB
               </p>
             </div>
@@ -111,6 +123,7 @@
             <div id="previewContainer" class="hidden w-full h-full p-4">
               <img
                 id="imgPrev"
+                alt="Face Preview"
                 class="w-full h-full object-contain rounded-xl"
               />
             </div>
@@ -122,7 +135,7 @@
         type="button"
         onclick="submitData()"
         id="btnSubmit"
-        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-blue-500/20 uppercase tracking-[0.2em] text-[10px]"
+        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 md:py-5 rounded-2xl transition-all shadow-xl shadow-blue-500/20 uppercase tracking-[0.2em] text-[10px]"
       >
         <span id="btnContent" class="flex items-center justify-center gap-2">
           Selesaikan Pendaftaran

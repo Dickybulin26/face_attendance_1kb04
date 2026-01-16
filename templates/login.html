@@ -9,25 +9,16 @@
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap"
       rel="stylesheet"
     />
-    <style>
-      body {
-        background: radial-gradient(
-          circle at 50% 50%,
-          #1e293b 0%,
-          #020617 100%
-        );
-        font-family: "Plus Jakarta Sans", sans-serif;
-      }
-      .blue-glass {
-        background: rgba(89, 173, 255, 0.08);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(89, 173, 255, 0.2);
-      }
-    </style>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles/style.css') }}"
+    />
   </head>
-  <body class="flex items-center justify-center min-h-screen text-slate-200">
+  <body
+    class="login-body flex items-center justify-center min-h-screen text-slate-200"
+  >
     <div
-      class="blue-glass p-10 rounded-[40px] w-full max-w-md shadow-2xl mx-4 animate-fade-in"
+      class="login-glass p-10 rounded-[40px] w-full max-w-md shadow-2xl mx-4 animate-fade-in"
     >
       <div class="text-center mb-10">
         <div
@@ -71,5 +62,7 @@
         </button>
       </form>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
   </body>
 </html>

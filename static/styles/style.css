@@ -199,6 +199,23 @@ body {
     border-radius: 6px !important;
 }
 
+/* --- Calendar Day Active & Hover --- */
+.fc-daygrid-day {
+    transition: background-color 0.2s ease;
+    border-radius: 8px;
+    color: #ffffff !important;
+}
+
+.fc-daygrid-day:hover {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+    cursor: pointer;
+}
+
+.fc-daygrid-day.has-attendance {
+    background-color: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
 /* Dot Glow Indikator */
 .tech-dot {
     width: 5px;
@@ -329,4 +346,27 @@ body {
     color: var(--accent);
     letter-spacing: 2px;
     text-transform: uppercase;
+}
+/* --- Login Page Specific --- */
+.login-body {
+    background: radial-gradient(
+        circle at 50% 50%,
+        #1e293b 0%,
+        #020617 100%
+    );
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.login-glass {
+    background: rgba(89, 173, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(89, 173, 255, 0.2);
+}
+
+/* --- Table Scroller Content --- */
+.table-scroller {
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
 }

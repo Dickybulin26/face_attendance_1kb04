@@ -24,7 +24,102 @@ document.addEventListener("DOMContentLoaded", () => {
   if (calendarEl) {
     initHistoryPage();
   }
+
+  // --- User Database Logic (Daftar User Page) ---
+  const userSearch = document.getElementById("userSearch");
+  if (userSearch) {
+    initUserDatabasePage();
+  }
+
+  // --- Mobile Menu Logic ---
+  const mobileBtn = document.getElementById("mobile-menu-btn");
+  const closeBtn = document.getElementById("close-menu-btn");
+  const mobileMenu = document.getElementById("mobile-menu");
+
+  function toggleMenu() {
+    mobileMenu.classList.toggle("translate-x-[150%]");
+  }
+
+  if (mobileBtn && mobileMenu) {
+    mobileBtn.addEventListener("click", toggleMenu);
+  }
+
+  if (closeBtn && mobileMenu) {
+    closeBtn.addEventListener("click", toggleMenu);
+  }
+
+  // --- Login Logic (Login Page) ---
+  const loginForm = document.querySelector("form.space-y-6");
+  if (loginForm) {
+    initLoginPage();
+  }
 });
+
+// ==========================================
+// LOGIN PAGE LOGIC
+// ==========================================
+function initLoginPage() {
+  const form = document.querySelector("form");
+  if (!form) return;
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    const btn = this.querySelector("button");
+    const originalText = btn.innerText;
+
+    try {
+      btn.disabled = true;
+      btn.innerText = "Loading...";
+
+      const response = await fetch("/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        Swal.fire({
+          icon: "success",
+          title: "Login Berhasil!",
+          text: "Mengalihkan ke dashboard...",
+          showConfirmButton: false,
+          timer: 1500,
+          background: "#0f172a",
+          color: "#fff",
+        }).then(() => {
+          window.location.href = result.redirect;
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Login Gagal",
+          text: result.message || "Username/Password salah",
+          background: "#0f172a",
+          color: "#fff",
+          confirmButtonColor: "#3b82f6",
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "System Error",
+        text: "Gagal terhubung ke server",
+        background: "#0f172a",
+        color: "#fff",
+      });
+    } finally {
+      btn.disabled = false;
+      btn.innerText = originalText;
+    }
+  });
+}
 
 // ==========================================
 // SCANNER PAGE LOGIC
@@ -341,10 +436,37 @@ function initHistoryPage() {
     }
   };
 
+  // --- Search Logic ---
+  const searchInput = document.getElementById("tableSearch");
+  const tableRows = document.querySelectorAll(".log-row");
+  const noLogsFound = document.getElementById("noLogsFound");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      const term = e.target.value.toLowerCase();
+      let hasVisible = false;
+
+      tableRows.forEach((row) => {
+        const text = row.innerText.toLowerCase();
+        const match = text.includes(term);
+        row.style.display = match ? "" : "none";
+        if (match) hasVisible = true;
+      });
+
+      if (noLogsFound) {
+        if (hasVisible) {
+          noLogsFound.classList.add("hidden");
+        } else {
+          noLogsFound.classList.remove("hidden");
+        }
+      }
+    });
+  }
+
   // Initialize FullCalendar
   if (typeof FullCalendar !== "undefined") {
     const calendarEl = document.getElementById("calendar");
-    const tooltip = document.getElementById("tooltip");
+    const tooltip = document.getElementById("calendar-tooltip");
 
     window.calendarInstance = new FullCalendar.Calendar(calendarEl, {
       initialView: "dayGridMonth",
@@ -359,69 +481,172 @@ function initHistoryPage() {
         const isAdm = p.is_admin;
         const cssClass = isAdm ? "pill-admin" : "pill-user";
         const iconName = isAdm ? "users" : "check-circle";
-        const text = isAdm ? `${p.count} User` : "Hadir";
+        const text = isAdm ? `${p.count}` : "Hadir";
 
         return {
           html: `
                     <div class="custom-event-pill ${cssClass}">
-                    <i data-lucide="${iconName}" style="width:12px; height:12px;"></i>
-                    <span>${text}</span>
+                      <div class="flex justify-center items-center gap-2">
+                        <i data-lucide="${iconName}" style="width:12px; height:12px;"></i>
+                        <span>${text}</span>
+                      </div>
                     </div>
                 `,
         };
       },
 
-      eventDidMount: () => {
+      eventDidMount: (info) => {
         if (typeof lucide !== "undefined") lucide.createIcons();
-      },
 
-      // Tooltip Logic
-      eventMouseEnter: function (info) {
-        const p = info.event.extendedProps;
-        const nameEl = document.getElementById("tooltip-name");
-        const contentEl = document.getElementById("tooltip-time");
+        // Highlight Day Cell if it has events
+        const dayCell = info.el.closest(".fc-daygrid-day");
+        if (dayCell) {
+          dayCell.classList.add("has-attendance");
 
-        if (nameEl) nameEl.innerText = p.is_admin ? "Rekap Harian" : p.nama;
+          // Store data for hover
+          const eventProps = info.event.extendedProps;
 
-        if (contentEl) {
-          if (p.is_admin) {
-            let html = "";
-            (p.users || []).forEach((u) => {
-              html += `
-                            <div class="flex justify-between items-center text-[10px] text-slate-300">
-                                <span>${u.nama}</span>
-                                <span class="font-mono text-blue-400">${u.waktu}</span>
-                            </div>`;
-            });
-            contentEl.innerHTML =
-              html || '<span class="text-slate-500 text-[10px]">Kosong</span>';
-          } else {
-            contentEl.innerHTML = `<div class="text-xs text-slate-400">Waktu Absen: <span class="text-white font-mono">${p.waktu}</span></div>`;
-          }
+          // Attach Hover to the CELL (td), not just the event anchor
+          dayCell.addEventListener("mouseenter", () =>
+            showTooltip(eventProps, dayCell)
+          );
+          dayCell.addEventListener("mouseleave", () => hideTooltip());
         }
-
-        // Positioning Tooltip
-        if (tooltip) {
-          tooltip.style.display = "block";
-          const rect = info.el.getBoundingClientRect();
-          // Center tooltip above event
-          const top = rect.top + window.scrollY - tooltip.offsetHeight - 10;
-          const left =
-            rect.left +
-            window.scrollX +
-            rect.width / 2 -
-            tooltip.offsetWidth / 2;
-
-          tooltip.style.top = `${top}px`;
-          tooltip.style.left = `${left}px`;
-        }
-      },
-
-      eventMouseLeave: () => {
-        if (tooltip) tooltip.style.display = "none";
       },
     });
 
     window.calendarInstance.render();
+
+    // Helper Functions for Tooltip
+    function showTooltip(props, targetEl) {
+      const tooltip = document.getElementById("calendar-tooltip");
+      const nameEl = document.getElementById("tooltip-name");
+      const contentEl = document.getElementById("tooltip-time");
+
+      if (nameEl)
+        nameEl.innerText = props.is_admin ? "Rekap Harian" : props.nama;
+
+      if (contentEl) {
+        if (props.is_admin) {
+          let html = "";
+          (props.users || []).forEach((u) => {
+            html += `
+                        <div class="flex justify-between items-center text-[10px] text-slate-300">
+                            <span>${u.nama}</span>
+                            <span class="font-mono text-blue-400">${u.waktu}</span>
+                        </div>`;
+          });
+          contentEl.innerHTML =
+            html || '<span class="text-slate-500 text-[10px]">Kosong</span>';
+        } else {
+          contentEl.innerHTML = `<div class="text-xs text-slate-400">Waktu Absen: <span class="text-white font-mono">${props.waktu}</span></div>`;
+        }
+      }
+
+      if (tooltip) {
+        tooltip.style.display = "block";
+        const rect = targetEl.getBoundingClientRect();
+        // Center tooltip above the CELL
+        const top = rect.top + window.scrollY - tooltip.offsetHeight - 10;
+        const left =
+          rect.left + window.scrollX + rect.width / 2 - tooltip.offsetWidth / 2;
+
+        tooltip.style.top = `${top}px`;
+        tooltip.style.left = `${left}px`;
+      }
+    }
+
+    function hideTooltip() {
+      const tooltip = document.getElementById("calendar-tooltip");
+      if (tooltip) tooltip.style.display = "none";
+    }
   }
+}
+
+// ==========================================
+// USER DATABASE PAGE LOGIC
+// ==========================================
+function initUserDatabasePage() {
+  const searchInput = document.getElementById("userSearch");
+  const userRows = document.querySelectorAll(".user-row");
+  const noResult = document.getElementById("noResult");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", function (e) {
+      const term = e.target.value.toLowerCase();
+      let hasMatch = false;
+
+      userRows.forEach((row) => {
+        const data = row.getAttribute("data-search");
+        if (data.includes(term)) {
+          row.style.display = "grid";
+          hasMatch = true;
+        } else {
+          row.style.display = "none";
+        }
+      });
+
+      if (noResult) noResult.classList.toggle("hidden", hasMatch);
+    });
+  }
+
+  window.toggleEdit = function (id) {
+    const label = document.getElementById(`name-${id}`);
+    const btn = document.getElementById(`btn-edit-${id}`);
+    const iconEdit = document.getElementById(`icon-edit-${id}`);
+    const iconSave = document.getElementById(`icon-save-${id}`);
+    const isEditing = label.getAttribute("contenteditable") === "true";
+
+    if (!isEditing) {
+      label.setAttribute("contenteditable", "true");
+      label.focus();
+      btn.classList.add("border-blue-500", "bg-blue-500/10");
+      iconEdit.classList.add("hidden");
+      iconSave.classList.remove("hidden");
+
+      // Move cursor to end
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.selectNodeContents(label);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } else {
+      const newName = label.innerText.trim();
+      if (newName) {
+        saveEdit(id, newName);
+      } else {
+        alert("Nama tidak boleh kosong!");
+      }
+    }
+  };
+
+  window.saveEdit = function (id, newName) {
+    fetch(`/edit_user/${id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nama: newName }),
+    }).then((res) => {
+      if (res.ok) {
+        const label = document.getElementById(`name-${id}`);
+        label.classList.add("text-emerald-400");
+        setTimeout(() => location.reload(), 500);
+      } else {
+        alert("Database Sync Failed.");
+      }
+    });
+  };
+
+  window.deleteUser = function (id) {
+    if (confirm("WARNING: Permanent deletion of biometric data. Proceed?")) {
+      fetch(`/delete_user/${id}`, { method: "POST" }).then((res) => {
+        if (res.ok) {
+          const row = document.getElementById(`row-${id}`);
+          row.style.transform = "translateX(50px)";
+          row.style.opacity = "0";
+          setTimeout(() => row.remove(), 300);
+        }
+      });
+    }
+  };
 }

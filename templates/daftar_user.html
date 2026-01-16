@@ -1,212 +1,191 @@
-{% extends "base.html" %}
-
-{% block title %}Database User - AbsensiPro{% endblock %}
-
-{% block content %}
-<main class="max-w-7xl mx-auto p-6 md:p-10 flex flex-col h-[calc(100vh-80px)] overflow-hidden page-animate">
-    
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 shrink-0">
-        <div>
-            <div class="flex items-center gap-3 mb-1">
-                <div class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
-                <h2 class="text-3xl font-black tracking-tighter text-white uppercase">
-                    Core <span class="text-blue-500">Database</span>
-                </h2>
-            </div>
-            <p class="text-[10px] text-slate-500 font-bold tracking-[0.3em] uppercase">
-                Authorized Personnel Only
-            </p>
-        </div>
-        
-        <a href="/tambah_wajah" 
-           class="flex items-center gap-3 px-8 py-4 rounded-2xl bg-blue-600 text-white text-xs font-black transition-all hover:bg-blue-500 hover:scale-105 active:scale-95 shadow-[0_0_30px_-5px_rgba(59,130,246,0.5)]">
-           <i data-lucide="plus-square" class="w-4 h-4"></i>
-           REGISTER NEW IDENTITY
-        </a>
+{% extends "base.html" %} {% block title %}Database User - AbsensiPro{% endblock
+%} {% block content %}
+<main
+  class="max-w-7xl mx-auto p-6 md:p-10 flex flex-col min-h-screen lg:h-[calc(100vh-80px)] lg:overflow-hidden page-animate"
+>
+  <div
+    class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 shrink-0"
+  >
+    <div>
+      <div class="flex items-center gap-3 mb-1">
+        <div class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
+        <h2 class="text-3xl font-black tracking-tighter text-white uppercase">
+          Core <span class="text-blue-500">Database</span>
+        </h2>
+      </div>
+      <p
+        class="text-[10px] text-slate-500 font-bold tracking-[0.3em] uppercase"
+      >
+        Authorized Personnel Only
+      </p>
     </div>
 
-    <div class="mb-6 shrink-0 search-container">
-        <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-            <i data-lucide="search" class="w-4 h-4 text-slate-500"></i>
-        </div>
-        <input type="text" 
-               id="userSearch" 
-               placeholder="Search by name or unique ID..." 
-               class="search-input w-full rounded-2xl py-4 pl-12 pr-6 text-sm text-white focus:outline-none">
+    <a
+      href="/tambah_wajah"
+      class="flex items-center gap-3 px-8 py-4 rounded-2xl bg-blue-600 text-white text-xs font-black transition-all hover:bg-blue-500 hover:scale-105 active:scale-95 shadow-[0_0_30px_-5px_rgba(59,130,246,0.5)]"
+    >
+      <i data-lucide="plus-square" class="w-4 h-4"></i>
+      REGISTER NEW IDENTITY
+    </a>
+  </div>
+
+  <div class="mb-6 shrink-0 search-container">
+    <div
+      class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none"
+    >
+      <i data-lucide="search" class="w-4 h-4 text-slate-500"></i>
+    </div>
+    <input
+      type="text"
+      id="userSearch"
+      placeholder="Search by name or unique ID..."
+      class="search-input w-full rounded-2xl py-4 pl-12 pr-6 text-sm text-white focus:outline-none"
+    />
+  </div>
+
+  <div
+    class="blue-glass flex flex-col overflow-hidden border border-white/10 shadow-2xl relative h-[600px] lg:h-auto lg:flex-1"
+  >
+    <div
+      class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[60px] pointer-events-none"
+    ></div>
+
+    <div
+      class="grid grid-cols-12 gap-4 px-10 py-6 border-b border-white/5 bg-white/[0.03] text-[10px] font-black uppercase tracking-[0.2em] text-slate-400"
+    >
+      <div class="col-span-2">Biometric</div>
+      <div class="col-span-5">Identity Profile</div>
+      <div class="col-span-2 text-center">Security</div>
+      <div class="col-span-3 text-right">System Action</div>
     </div>
 
-    <div class="blue-glass flex flex-col flex-1 overflow-hidden border border-white/10 shadow-2xl relative">
-        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[60px] pointer-events-none"></div>
-
-        <div class="grid grid-cols-12 gap-4 px-10 py-6 border-b border-white/5 bg-white/[0.03] text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-            <div class="col-span-2">Biometric</div>
-            <div class="col-span-5">Identity Profile</div>
-            <div class="col-span-2 text-center">Security</div>
-            <div class="col-span-3 text-right">System Action</div>
-        </div>
-
-        <div id="scrollArea" class="flex-1 overflow-y-auto tech-scroll p-6">
-            <div id="userList" class="space-y-3">
-                {% for user in users %}
-                <div id="row-{{ user._id }}" 
-                     data-search="{{ user.nama|lower }} {{ (user._id|string)[-8:]|lower }}"
-                     class="user-row grid grid-cols-12 gap-4 items-center px-6 py-4 rounded-2xl border border-white/5 bg-slate-900/20 backdrop-blur-sm group">
-                    
-                    <div class="col-span-2">
-                        <div class="relative w-14 h-14">
-                            <div class="absolute inset-0 bg-blue-500/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <div class="relative w-full h-full rounded-xl overflow-hidden border border-white/10 bg-slate-800">
-                                {% if user.image_preview %}
-                                <img src="{{ user.image_preview }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                                {% else %}
-                                <div class="w-full h-full flex items-center justify-center text-slate-700">
-                                    <i data-lucide="fingerprint" class="w-6 h-6"></i>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-span-5">
-                        <div class="flex items-center gap-2">
-                            <span id="name-{{ user._id }}" 
-                                  class="text-base font-bold text-white outline-none focus:text-blue-400 focus:bg-blue-500/10 px-1 rounded-lg transition-all" 
-                                  contenteditable="false" 
-                                  spellcheck="false">{{ user.nama }}</span>
-                        </div>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="text-[9px] text-blue-500/60 font-mono tracking-tighter uppercase font-bold">Encrypted ID:</span>
-                            <span class="text-[9px] text-slate-500 font-mono tracking-widest">{{ (user._id|string)|upper }}</span>
-                        </div>
-                    </div>
-
-                    <div class="col-span-2 flex justify-center">
-                        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/5 border border-emerald-500/20">
-                            <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_8px_#10b981]"></div>
-                            <span class="text-emerald-500 text-[8px] font-black uppercase tracking-widest">Active</span>
-                        </div>
-                    </div>
-
-                    <div class="col-span-3 flex justify-end gap-3">
-                        <button onclick="toggleEdit('{{ user._id }}')" id="btn-edit-{{ user._id }}" 
-                                class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 border border-white/5 hover:border-blue-500/50 hover:text-blue-400 hover:bg-blue-500/5 transition-all">
-                            <i id="icon-edit-{{ user._id }}" data-lucide="terminal" class="w-4 h-4"></i>
-                            <i id="icon-save-{{ user._id }}" data-lucide="save" class="w-4 h-4 hidden text-blue-400"></i>
-                        </button>
-
-                        <button onclick="deleteUser('{{ user._id }}')" 
-                                class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 border border-white/5 hover:border-red-500/50 hover:text-red-500 hover:bg-red-500/5 transition-all">
-                            <i data-lucide="shield-off" class="w-4 h-4"></i>
-                        </button>
-                    </div>
+    <div id="scrollArea" class="flex-1 overflow-y-auto tech-scroll p-6">
+      <div id="userList" class="space-y-3">
+        {% for user in users %}
+        <div
+          id="row-{{ user._id }}"
+          data-search="{{ user.nama|lower }} {{ (user._id|string)[-8:]|lower }}"
+          class="user-row grid grid-cols-12 gap-4 items-center px-6 py-4 rounded-2xl border border-white/5 bg-slate-900/20 backdrop-blur-sm group"
+        >
+          <div class="col-span-2">
+            <div class="relative w-14 h-14">
+              <div
+                class="absolute inset-0 bg-blue-500/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity"
+              ></div>
+              <div
+                class="relative w-full h-full rounded-xl overflow-hidden border border-white/10 bg-slate-800"
+              >
+                {% if user.image_preview %}
+                <img
+                  src="{{ user.image_preview }}"
+                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+                {% else %}
+                <div
+                  class="w-full h-full flex items-center justify-center text-slate-700"
+                >
+                  <i data-lucide="fingerprint" class="w-6 h-6"></i>
                 </div>
-                {% endfor %}
-
-                <div id="noResult" class="hidden flex flex-col items-center justify-center py-20">
-                    <div class="empty-state">
-                        <i data-lucide="alert-octagon" class="w-16 h-16 text-slate-800 mb-4"></i>
-                    </div>
-                    <h3 class="text-slate-400 font-bold uppercase tracking-widest text-xs">No Matches Found in Database</h3>
-                    <p class="text-slate-600 text-[10px] mt-2">Try checking the spelling or ID sequence</p>
-                </div>
+                {% endif %}
+              </div>
             </div>
+          </div>
+
+          <div class="col-span-5">
+            <div class="flex items-center gap-2">
+              <span
+                id="name-{{ user._id }}"
+                class="text-base font-bold text-white outline-none focus:text-blue-400 focus:bg-blue-500/10 px-1 rounded-lg transition-all"
+                contenteditable="false"
+                spellcheck="false"
+                >{{ user.nama }}</span
+              >
+            </div>
+            <div class="flex items-center gap-2 mt-1">
+              <span
+                class="text-[9px] text-blue-500/60 font-mono tracking-tighter uppercase font-bold"
+                >Encrypted ID:</span
+              >
+              <span class="text-[9px] text-slate-500 font-mono tracking-widest"
+                >{{ (user._id|string)|upper }}</span
+              >
+            </div>
+          </div>
+
+          <div class="col-span-2 flex justify-center">
+            <div
+              class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/5 border border-emerald-500/20"
+            >
+              <div
+                class="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_8px_#10b981]"
+              ></div>
+              <span
+                class="text-emerald-500 text-[8px] font-black uppercase tracking-widest"
+                >Active</span
+              >
+            </div>
+          </div>
+
+          <div class="col-span-3 flex justify-end gap-3">
+            <button
+              onclick="toggleEdit('{{ user._id }}')"
+              id="btn-edit-{{ user._id }}"
+              class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 border border-white/5 hover:border-blue-500/50 hover:text-blue-400 hover:bg-blue-500/5 transition-all"
+            >
+              <i
+                id="icon-edit-{{ user._id }}"
+                data-lucide="terminal"
+                class="w-4 h-4"
+              ></i>
+              <i
+                id="icon-save-{{ user._id }}"
+                data-lucide="save"
+                class="w-4 h-4 hidden text-blue-400"
+              ></i>
+            </button>
+
+            <button
+              onclick="deleteUser('{{ user._id }}')"
+              class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 border border-white/5 hover:border-red-500/50 hover:text-red-500 hover:bg-red-500/5 transition-all"
+            >
+              <i data-lucide="shield-off" class="w-4 h-4"></i>
+            </button>
+          </div>
         </div>
-        
-        <div class="px-10 py-4 bg-black/20 border-t border-white/5 flex justify-between items-center">
-            <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Biometric Data Encryption: AES-256</p>
-            <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Total Nodes: {{ users|length }}</p>
+        {% endfor %}
+
+        <div
+          id="noResult"
+          class="hidden flex flex-col items-center justify-center py-20"
+        >
+          <div class="empty-state">
+            <i
+              data-lucide="alert-octagon"
+              class="w-16 h-16 text-slate-800 mb-4"
+            ></i>
+          </div>
+          <h3
+            class="text-slate-400 font-bold uppercase tracking-widest text-xs"
+          >
+            No Matches Found in Database
+          </h3>
+          <p class="text-slate-600 text-[10px] mt-2">
+            Try checking the spelling or ID sequence
+          </p>
         </div>
+      </div>
     </div>
+
+    <div
+      class="px-10 py-4 bg-black/20 border-t border-white/5 flex justify-between items-center"
+    >
+      <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">
+        Biometric Data Encryption: AES-256
+      </p>
+      <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">
+        Total Nodes: {{ users|length }}
+      </p>
+    </div>
+  </div>
 </main>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-    // Inisialisasi Lucide Icons
-    lucide.createIcons();
-
-    // Logika Pencarian Real-time
-    const searchInput = document.getElementById('userSearch');
-    const userRows = document.querySelectorAll('.user-row');
-    const noResult = document.getElementById('noResult');
-
-    searchInput.addEventListener('input', function(e) {
-        const term = e.target.value.toLowerCase();
-        let hasMatch = false;
-
-        userRows.forEach(row => {
-            const data = row.getAttribute('data-search');
-            if (data.includes(term)) {
-                row.style.display = 'grid';
-                hasMatch = true;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        noResult.classList.toggle('hidden', hasMatch);
-    });
-
-    // Logika Edit User
-    function toggleEdit(id) {
-        const label = document.getElementById(`name-${id}`);
-        const btn = document.getElementById(`btn-edit-${id}`);
-        const iconEdit = document.getElementById(`icon-edit-${id}`);
-        const iconSave = document.getElementById(`icon-save-${id}`);
-        const isEditing = label.getAttribute('contenteditable') === 'true';
-
-        if (!isEditing) {
-            label.setAttribute('contenteditable', 'true');
-            label.focus();
-            btn.classList.add("border-blue-500", "bg-blue-500/10");
-            iconEdit.classList.add("hidden");
-            iconSave.classList.remove("hidden");
-            
-            // Move cursor to end
-            const range = document.createRange();
-            const sel = window.getSelection();
-            range.selectNodeContents(label);
-            range.collapse(false);
-            sel.removeAllRanges();
-            sel.addRange(range);
-        } else {
-            const newName = label.innerText.trim();
-            if (newName) {
-                saveEdit(id, newName);
-            } else {
-                alert("Nama tidak boleh kosong!");
-            }
-        }
-    }
-
-    function saveEdit(id, newName) {
-        fetch(`/edit_user/${id}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nama: newName }),
-        }).then(res => {
-            if(res.ok) {
-                // Beri efek sukses visual sebentar sebelum reload
-                const label = document.getElementById(`name-${id}`);
-                label.classList.add("text-emerald-400");
-                setTimeout(() => location.reload(), 500);
-            } else {
-                alert("Database Sync Failed.");
-            }
-        });
-    }
-
-    function deleteUser(id) {
-        if (confirm("WARNING: Permanent deletion of biometric data. Proceed?")) {
-            fetch(`/delete_user/${id}`, { method: "POST" }).then(res => {
-                if(res.ok) {
-                    const row = document.getElementById(`row-${id}`);
-                    row.style.transform = "translateX(50px)";
-                    row.style.opacity = "0";
-                    setTimeout(() => row.remove(), 300);
-                }
-            });
-        }
-    }
-</script>
 {% endblock %}

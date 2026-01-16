@@ -1,205 +1,186 @@
-{% extends "base.html" %}
-
-{% block title %}System Logs - AbsensiPro{% endblock %}
-
-{% block head %}
+{% extends "base.html" %} {% block title %}System Logs - AbsensiPro{% endblock
+%} {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-<style>
-    /* Tooltip Styling */
-    #calendar-tooltip {
-        position: fixed;
-        display: none;
-        z-index: 99999;
-        background: rgba(15, 23, 42, 0.98);
-        backdrop-filter: blur(12px);
-        border: 1px solid #3b82f6;
-        padding: 12px;
-        border-radius: 10px;
-        min-width: 200px;
-        pointer-events: none;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-    }
-
-    /* FIX: Sticky Header agar tidak tembus */
-    .tech-table thead {
-        position: sticky;
-        top: 0;
-        z-index: 40; /* Pastikan di atas tbody */
-    }
-
-    .tech-table thead th {
-        /* Wajib ada background solid/opaque agar data di bawahnya tidak terlihat saat scroll */
-        background-color: #0f172a !important; 
-        box-shadow: inset 0 -1px 0 rgba(59, 130, 246, 0.2); /* Pengganti border agar tetap tajam */
-    }
-
-    /* Memastikan container tabel mengisolasi scroll */
-    .table-scroller {
-        position: relative;
-        overflow-y: auto;
-        overflow-x: hidden;
-        height: 100%;
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-80px)] overflow-hidden page-animate">
-    
-    <div class="lg:col-span-8 flex flex-col overflow-hidden">
-        <div class="flex items-center justify-between mb-4 shrink-0 px-2">
-            <div>
-                <h2 class="text-xl font-black text-white uppercase tracking-tighter">Database <span class="text-blue-500">Logs</span></h2>
-                <div class="flex items-center gap-2 text-[8px] text-slate-500 font-bold tracking-[0.3em] uppercase">
-                    <span class="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></span>
-                    SECURED CONNECTION ACTIVE
-                </div>
-            </div>
-            <div class="relative">
-                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-600"></i>
-                <input type="text" id="tableSearch" placeholder="Filter Identity..." 
-                       class="search-input rounded-xl py-2.5 pl-9 pr-4 text-[11px] w-64">
-            </div>
+{% endblock %} {% block content %}
+<main
+  class="max-w-7xl mx-auto p-4 md:p-6 flex flex-col lg:grid lg:grid-cols-12 gap-6 min-h-screen lg:h-[calc(100vh-80px)] lg:overflow-hidden page-animate"
+>
+  <div class="lg:col-span-8 flex flex-col overflow-hidden order-2 lg:order-1">
+    <div
+      class="flex flex-col md:flex-row md:items-center justify-between mb-4 shrink-0 px-2 gap-4"
+    >
+      <div>
+        <h2 class="text-xl font-black text-white uppercase tracking-tighter">
+          Database <span class="text-blue-500">Logs</span>
+        </h2>
+        <div
+          class="flex items-center gap-2 text-[8px] text-slate-500 font-bold tracking-[0.3em] uppercase"
+        >
+          <span
+            class="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"
+          ></span>
+          SECURED CONNECTION ACTIVE
         </div>
-
-        <div class="tech-table-container flex-1 flex flex-col shadow-2xl overflow-hidden border border-white/5 rounded-2xl bg-[#0f172a]">
-            <div class="table-scroller tech-scroll">
-                <table class="w-full text-left tech-table border-collapse">
-                    <thead>
-                        <tr class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                            <th class="px-6 py-4">Auth_User</th>
-                            <th class="px-6 py-4">Timeline</th>
-                            <th class="px-6 py-4 text-center">Status</th>
-                            <th class="px-6 py-4 text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logTableBody" class="divide-y divide-white/[0.02]">
-                        {% for log in logs %}
-                        <tr class="log-row group hover:bg-blue-500/[0.02] transition-colors">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-1 h-3 bg-blue-500/50 group-hover:bg-blue-500 transition-colors"></div>
-                                    <span class="text-xs font-bold text-slate-200 uppercase tracking-tight">{{ log.nama }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-col">
-                                    <span class="text-[10px] text-blue-400 font-mono font-bold">{{ log.waktu }}</span>
-                                    <span class="text-[8px] text-slate-600 font-mono">{{ log.tanggal }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <span class="text-[8px] font-black px-2 py-0.5 rounded border border-emerald-500/20 bg-emerald-500/5 text-emerald-500 uppercase">Success</span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <button onclick="deleteLog('{{ log.id }}')" class="text-slate-700 hover:text-red-500 transition-all">
-                                    <i data-lucide="x-square" class="w-4 h-4"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="p-4 bg-black/20 border-t border-white/5 flex justify-between items-center shrink-0">
-                <p class="text-[8px] text-slate-600 font-bold tracking-widest uppercase">Capacity: {{ logs|length }} Nodes</p>
-                <button onclick="deleteAllLogs()" class="text-[8px] font-black text-red-500/40 hover:text-red-500 uppercase transition-colors tracking-widest">Wipe Database</button>
-            </div>
-        </div>
+      </div>
+      <div class="relative w-full md:w-auto">
+        <i
+          data-lucide="search"
+          class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-600"
+        ></i>
+        <input
+          type="text"
+          id="tableSearch"
+          placeholder="Filter Identity..."
+          class="search-input rounded-xl py-2.5 pl-9 pr-4 text-[11px] w-full md:w-64 bg-white/5 border border-white/10 text-white focus:outline-none focus:border-blue-500 transition-all"
+        />
+      </div>
     </div>
 
-    <div class="lg:col-span-4 flex flex-col gap-6 overflow-hidden">
-        <div class="blue-glass-light p-5 shrink-0 relative overflow-hidden rounded-2xl border border-white/5">
-            <div class="aspect-square">
-                <div id="calendar"></div>
-            </div>
-        </div>
-
-        <div class="flex-1 blue-glass-light flex flex-col overflow-hidden p-5 rounded-2xl border border-white/5">
-            <div class="flex items-center gap-2 mb-4 border-b border-white/5 pb-3">
-                <i data-lucide="rss" class="w-3 h-3 text-blue-500"></i>
-                <h3 class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Recent_Activity</h3>
-            </div>
-            <div class="flex-1 overflow-y-auto tech-scroll space-y-3">
-                {% for log in logs[:10] %}
-                <div class="flex items-center gap-3 p-2 rounded-lg bg-white/[0.01]">
-                    <div class="w-1 h-6 bg-slate-800"></div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-[10px] font-bold text-slate-300 truncate uppercase">{{ log.nama }}</p>
-                        <p class="text-[8px] text-slate-600 font-mono">{{ log.waktu }}</p>
-                    </div>
+    <div
+      class="tech-table-container relative flex flex-col shadow-2xl overflow-hidden border border-white/5 rounded-2xl bg-[#0f172a] h-[600px] lg:h-auto lg:flex-1"
+    >
+      <div class="table-scroller tech-scroll overflow-x-auto relative z-10">
+        <table
+          class="w-full text-left tech-table border-collapse min-w-[600px]"
+        >
+          <thead>
+            <tr
+              class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400"
+            >
+              <th class="px-6 py-4">Auth_User</th>
+              <th class="px-6 py-4">Timeline</th>
+              <th class="px-6 py-4 text-center">Status</th>
+              <th class="px-6 py-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="logTableBody" class="divide-y divide-white/[0.02]">
+            {% for log in logs %}
+            <tr
+              class="log-row group hover:bg-blue-500/[0.02] transition-colors"
+            >
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-1 h-3 bg-blue-500/50 group-hover:bg-blue-500 transition-colors"
+                  ></div>
+                  <span
+                    class="text-xs font-bold text-slate-200 uppercase tracking-tight"
+                    >{{ log.nama }}</span
+                  >
                 </div>
-                {% endfor %}
-            </div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex flex-col">
+                  <span class="text-[10px] text-blue-400 font-mono font-bold"
+                    >{{ log.waktu }}</span
+                  >
+                  <span class="text-[8px] text-slate-600 font-mono"
+                    >{{ log.tanggal }}</span
+                  >
+                </div>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <span
+                  class="text-[8px] font-black px-2 py-0.5 rounded border border-emerald-500/20 bg-emerald-500/5 text-emerald-500 uppercase"
+                  >Success</span
+                >
+              </td>
+              <td class="px-6 py-4 text-right">
+                <button
+                  onclick="deleteLog('{{ log.id }}')"
+                  class="text-slate-700 hover:text-red-500 transition-all"
+                >
+                  <i data-lucide="trash" class="w-5 h-5"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- No Result State (Centered Overlay) -->
+      <div
+        id="noLogsFound"
+        class="hidden absolute inset-0 top-12 flex flex-col items-center justify-center z-0 pointer-events-none"
+      >
+        <div class="flex flex-col items-center justify-center opacity-50">
+          <i data-lucide="search-x" class="w-12 h-12 text-slate-500 mb-4"></i>
+          <p
+            class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]"
+          >
+            No Activity Found
+          </p>
+          <p class="text-[8px] text-slate-600 mt-1 uppercase tracking-widest">
+            Adjust search filters
+          </p>
         </div>
+      </div>
+
+      <div
+        class="p-4 bg-black/20 border-t border-white/5 flex justify-between items-center shrink-0 relative z-20"
+      >
+        <p
+          class="text-[10px] text-slate-600 font-bold tracking-widest uppercase"
+        >
+          Capacity: {{ logs|length }} Nodes
+        </p>
+        <button
+          onclick="deleteAllLogs()"
+          class="text-[10px] font-black text-red-500/40 hover:text-red-500 uppercase transition-colors tracking-widest"
+        >
+          Wipe Database
+        </button>
+      </div>
     </div>
+  </div>
+
+  <div
+    class="lg:col-span-4 flex flex-col gap-6 overflow-hidden order-1 lg:order-2 h-auto lg:h-full"
+  >
+    <div
+      class="blue-glass-light p-5 shrink-0 relative overflow-hidden rounded-2xl border border-white/5"
+    >
+      <div class="aspect-square lg:aspect-square">
+        <div id="calendar" class="h-full"></div>
+      </div>
+    </div>
+
+    <div
+      class="flex-1 blue-glass-light hidden lg:flex flex-col overflow-hidden p-5 rounded-2xl border border-white/5"
+    >
+      <div class="flex items-center gap-2 mb-4 border-b border-white/5 pb-3">
+        <i data-lucide="rss" class="w-3 h-3 text-blue-500"></i>
+        <h3
+          class="text-[9px] font-black text-slate-400 uppercase tracking-widest"
+        >
+          Recent_Activity
+        </h3>
+      </div>
+      <div class="flex-1 overflow-y-auto tech-scroll space-y-3">
+        {% for log in logs[:10] %}
+        <div class="flex items-center gap-3 p-2 rounded-lg bg-white/[0.01]">
+          <div
+            class="w-1 h-3 bg-blue-500/50 group-hover:bg-blue-500 transition-colors"
+          ></div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] font-bold text-slate-300 truncate uppercase">
+              {{ log.nama }}
+            </p>
+            <p class="text-[8px] text-slate-600 font-mono">{{ log.waktu }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 </main>
 
 <div id="calendar-tooltip">
-    <div class="tooltip-header">
-        <i data-lucide="users" class="w-3 h-3"></i>
-        <span>Security Log Details</span>
-    </div>
-    <div id="tooltip-content"></div>
+  <div class="tooltip-header">
+    <i data-lucide="users" class="w-3 h-3"></i>
+    <span id="tooltip-name">Security Log Details</span>
+  </div>
+  <div id="tooltip-time"></div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-    lucide.createIcons();
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const tooltip = document.getElementById('calendar-tooltip');
-        const tooltipContent = document.getElementById('tooltip-content');
-        const calendarEl = document.getElementById('calendar');
-
-        function updateTooltipPosition(e) {
-            let x = e.clientX + 15;
-            let y = e.clientY + 15;
-            if (x + 220 > window.innerWidth) x = e.clientX - 220;
-            if (y + 120 > window.innerHeight) y = e.clientY - 120;
-            tooltip.style.left = x + 'px';
-            tooltip.style.top = y + 'px';
-        }
-
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            aspectRatio: 1,
-            headerToolbar: { left: 'prev', center: 'title', right: 'next' },
-            events: '/api/calendar_events',
-            dayMaxEvents: 1,
-            eventContent: () => ({ html: '<div class="tech-dot"></div>' }),
-            eventMouseEnter: function(info) {
-                const users = info.event.extendedProps.users || [];
-                tooltipContent.innerHTML = users.length > 0 
-                    ? users.map(u => `
-                        <div class="flex justify-between gap-4 text-[10px] py-1 border-b border-white/5 last:border-0">
-                            <span class="text-white font-bold">${u.nama}</span>
-                            <span class="text-blue-400 font-mono">${u.waktu}</span>
-                        </div>`).join('')
-                    : `<div class="text-[10px] text-white uppercase">${info.event.title}</div>`;
-                
-                updateTooltipPosition(info.jsEvent);
-                tooltip.style.display = 'block';
-            },
-            eventMouseMove: (info) => updateTooltipPosition(info.jsEvent),
-            eventMouseLeave: () => { tooltip.style.display = 'none'; }
-        });
-        calendar.render();
-
-        document.getElementById('tableSearch').addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase();
-            document.querySelectorAll('.log-row').forEach(row => {
-                row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none';
-            });
-        });
-    });
-
-    function deleteLog(id) {
-        if(confirm('Hapus log?')) fetch(`/delete_log/${id}`, {method: 'POST'}).then(() => location.reload());
-    }
-    function deleteAllLogs() {
-        if(confirm('Wipe database?')) window.location.href = '/clear_logs';
-    }
-</script>
 {% endblock %}
