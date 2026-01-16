@@ -43,16 +43,14 @@
         <table
           class="w-full text-left tech-table border-collapse min-w-[600px]"
         >
-          <thead>
-            <tr
-              class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400"
-            >
-              <th class="px-6 py-4">Auth_User</th>
-              <th class="px-6 py-4">Timeline</th>
-              <th class="px-6 py-4 text-center">Status</th>
-              <th class="px-6 py-4 text-right">Action</th>
-            </tr>
-          </thead>
+            <thead>
+                <tr class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    <th class="px-6 py-4 w-[30%]">Auth_User</th>
+                    <th class="px-6 py-4 w-[25%]">Timeline</th>
+                    <th class="px-6 py-4 w-[20%] text-center">Status</th>
+                    <th class="px-6 py-4 w-[25%] text-right">Action</th>
+                </tr>
+            </thead>
           <tbody id="logTableBody" class="divide-y divide-white/[0.02]">
             {% for log in logs %}
             <tr

@@ -118,8 +118,11 @@ body {
 }
 
 .tech-scroll {
-    overflow-y: auto;
+    /* UBAH DARI auto KE scroll */
+    overflow-y: scroll;
     flex: 1;
+    /* Opsional: scrollbar-gutter agar lebih modern (browser baru) */
+    scrollbar-gutter: stable;
 }
 
 .tech-table thead {
@@ -197,6 +200,11 @@ body {
     font-size: 9px !important;
     text-transform: uppercase !important;
     border-radius: 6px !important;
+}
+
+.fc-button-group {
+    display: flex;
+    gap: 6px !important;
 }
 
 /* --- Calendar Day Active & Hover --- */
