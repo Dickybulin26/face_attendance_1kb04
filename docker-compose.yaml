@@ -6,4 +6,6 @@ services:
       - "1324:1324"
     volumes:
       - ./known_faces:/app/known_faces
+    env_file:
+      - .env
     restart: always
