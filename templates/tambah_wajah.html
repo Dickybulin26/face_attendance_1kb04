@@ -1,5 +1,7 @@
 {% extends "base.html" %} {% block title %}Pendaftaran - AbsensiPro{% endblock
-%} {% block content %}
+%} {% block head %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %} {% block content %}
 <main
   class="max-w-2xl mx-auto p-4 md:p-8 page-entrance min-h-screen flex items-center justify-center"
 >
@@ -69,7 +71,7 @@
       <div class="relative">
         <div id="areaCamera" class="method-section">
           <div
-            class="relative aspect-video rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-black/40 border border-white/10 shadow-inner"
+            class="relative aspect-square md:aspect-video rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-black/40 border border-white/10 shadow-inner"
           >
             <video
               id="video"
@@ -82,7 +84,7 @@
               class="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
               <div
-                class="w-36 h-48 md:w-48 md:h-64 border-2 border-white/10 border-dashed rounded-full"
+                class="w-48 h-64 md:w-48 md:h-64 border-2 border-white/10 border-dashed rounded-full"
               ></div>
             </div>
           </div>
