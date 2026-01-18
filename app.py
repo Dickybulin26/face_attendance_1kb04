@@ -7,6 +7,7 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from face_engine import FaceEngine
 from dotenv import load_dotenv
+from utils import compress_base64_image
 load_dotenv()
 
 app = Flask(__name__)
@@ -241,12 +242,24 @@ def register_face():
     data = request.json
     nama = data.get('nama')
     img_data = data.get('image')
+    
+    # Register face with original image for face recognition
     success, msg = face_engine.register_face(nama, img_data)
+    
     if success:
+        # Compress image for database storage (preview only)
+        try:
+            compressed_image = compress_base64_image(img_data, max_width=400, quality=85)
+            print(f"✅ Image compressed successfully for {nama}")
+        except Exception as e:
+            print(f"⚠️ Image compression failed, using original: {e}")
+            compressed_image = img_data
+        
+        # Save to database with compressed image
         users_collection.insert_one({
             "nama": nama,
             "created_at": datetime.now(),
-            "image_preview": img_data
+            "image_preview": compressed_image
         })
         return jsonify({"status": "success", "message": msg})
     return jsonify({"status": "error", "message": msg})

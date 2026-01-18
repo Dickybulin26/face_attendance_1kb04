@@ -31,34 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initUserDatabasePage();
   }
 
-  // --- Mobile Menu Logic ---
-  const mobileBtn = document.getElementById("mobile-menu-btn");
-  const closeBtn = document.getElementById("close-menu-btn");
-  const mobileMenu = document.getElementById("mobile-menu");
-
-  function toggleMenu() {
-    mobileMenu.classList.toggle("hidden");
-  }
-
-  document.addEventListener("click", (e) => {
-    if (mobileMenu && !mobileMenu.classList.contains("hidden")) {
-      if (!mobileMenu.contains(e.target) && !mobileBtn.contains(e.target)) {
-        mobileMenu.classList.add("hidden");
-      }
-    }
-  });
-
-  if (mobileBtn && mobileMenu) {
-    mobileBtn.addEventListener("click", (e) => {
-      e.stopPropagation(); // Prevent immediate closing
-      toggleMenu();
-    });
-  }
-
-  if (closeBtn && mobileMenu) {
-    closeBtn.addEventListener("click", toggleMenu);
-  }
-
   // --- Login Logic (Login Page) ---
   const loginForm = document.querySelector("form.space-y-6");
   if (loginForm) {
@@ -266,7 +238,7 @@ function initScannerPage() {
                             <p class="text-[9px] text-slate-400 font-bold">${l.waktu}</p>
                         </div>
                     </div>
-                `
+                `,
         )
         .join("");
     } catch (e) {
@@ -511,26 +483,46 @@ function initHistoryPage() {
   const tableRows = document.querySelectorAll(".log-row");
   const noLogsFound = document.getElementById("noLogsFound");
 
+  // Store current filter state
+  let currentDateFilter = null;
+
   if (searchInput) {
     searchInput.addEventListener("input", (e) => {
       const term = e.target.value.toLowerCase();
-      let hasVisible = false;
+      filterTable(term, currentDateFilter);
+    });
+  }
 
-      tableRows.forEach((row) => {
-        const text = row.innerText.toLowerCase();
-        const match = text.includes(term);
-        row.style.display = match ? "" : "none";
-        if (match) hasVisible = true;
-      });
+  // Function to filter table based on search term and date
+  function filterTable(searchTerm = "", dateFilter = null) {
+    let hasVisible = false;
 
-      if (noLogsFound) {
-        if (hasVisible) {
-          noLogsFound.classList.add("hidden");
-        } else {
-          noLogsFound.classList.remove("hidden");
+    tableRows.forEach((row) => {
+      const text = row.innerText.toLowerCase();
+      const matchSearch = searchTerm === "" || text.includes(searchTerm);
+
+      let matchDate = true;
+      if (dateFilter) {
+        // Get the date from the row (format: YYYY-MM-DD)
+        const dateCell = row.querySelector("td:nth-child(2) .text-\\[8px\\]");
+        if (dateCell) {
+          const rowDate = dateCell.innerText.trim();
+          matchDate = rowDate === dateFilter;
         }
       }
+
+      const shouldShow = matchSearch && matchDate;
+      row.style.display = shouldShow ? "" : "none";
+      if (shouldShow) hasVisible = true;
     });
+
+    if (noLogsFound) {
+      if (hasVisible) {
+        noLogsFound.classList.add("hidden");
+      } else {
+        noLogsFound.classList.remove("hidden");
+      }
+    }
   }
 
   // Initialize FullCalendar
@@ -544,6 +536,48 @@ function initHistoryPage() {
       height: "100%", // Mengisi parent container
       headerToolbar: { left: "prev,next", center: "title", right: "today" }, // Layout Toolbar Modern
       events: "/api/calendar_events",
+
+      // Handle date click to filter table
+      dateClick: function (info) {
+        const clickedDate = info.dateStr; // Format: YYYY-MM-DD
+
+        // Remove previous selection highlight
+        document.querySelectorAll(".fc-daygrid-day").forEach((cell) => {
+          cell.classList.remove("selected-date");
+        });
+
+        // Toggle filter: if same date clicked, reset filter
+        if (currentDateFilter === clickedDate) {
+          currentDateFilter = null;
+          filterTable(searchInput ? searchInput.value.toLowerCase() : "", null);
+
+          // Show notification
+          showDateFilterNotification(
+            "Filter tanggal dihapus - Menampilkan semua data",
+          );
+        } else {
+          currentDateFilter = clickedDate;
+
+          // Highlight selected date
+          info.dayEl.classList.add("selected-date");
+
+          // Filter table by date
+          filterTable(
+            searchInput ? searchInput.value.toLowerCase() : "",
+            clickedDate,
+          );
+
+          // Show notification with formatted date
+          const formattedDate = new Date(
+            clickedDate + "T00:00:00",
+          ).toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          });
+          showDateFilterNotification(`Filter aktif: ${formattedDate}`);
+        }
+      },
 
       // Render Event Custom (Pills)
       eventContent: function (arg) {
@@ -577,15 +611,49 @@ function initHistoryPage() {
           const eventProps = info.event.extendedProps;
 
           // Attach Hover to the CELL (td), not just the event anchor
-          dayCell.addEventListener("mouseenter", () =>
-            showTooltip(eventProps, dayCell)
-          );
-          dayCell.addEventListener("mouseleave", () => hideTooltip());
+          // Only for desktop view (>= 768px) to avoid bug on mobile
+          if (window.innerWidth >= 768) {
+            dayCell.addEventListener("mouseenter", () =>
+              showTooltip(eventProps, dayCell),
+            );
+            dayCell.addEventListener("mouseleave", () => hideTooltip());
+          }
         }
       },
     });
 
     window.calendarInstance.render();
+
+    // Function to show date filter notification
+    function showDateFilterNotification(message) {
+      // Remove existing notification if any
+      const existing = document.getElementById("date-filter-notification");
+      if (existing) existing.remove();
+
+      // Create notification element
+      const notification = document.createElement("div");
+      notification.id = "date-filter-notification";
+      notification.className =
+        "fixed top-20 right-4 z-50 px-4 py-3 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-lg border border-blue-400 animate-slide-in";
+      notification.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i data-lucide="filter" class="w-4 h-4"></i>
+          <span>${message}</span>
+        </div>
+      `;
+
+      document.body.appendChild(notification);
+
+      // Reinitialize lucide icons
+      if (typeof lucide !== "undefined") lucide.createIcons();
+
+      // Auto remove after 3 seconds
+      setTimeout(() => {
+        notification.style.opacity = "0";
+        notification.style.transform = "translateX(100%)";
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
 
     // Helper Functions for Tooltip
     function showTooltip(props, targetEl) {
