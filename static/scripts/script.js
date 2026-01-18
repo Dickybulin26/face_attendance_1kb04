@@ -326,16 +326,96 @@ function initRegistrationPage() {
     }
   };
 
+  // --- File Processing (Shared) ---
+  window.handleFile = function (file) {
+    if (!file) return;
+
+    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSizeBytes) {
+      Swal.fire({
+        icon: "error",
+        title: "File Terlalu Besar",
+        text: `Ukuran file maksimal adalah 5MB. File Anda: ${(file.size / (1024 * 1024)).toFixed(2)}MB`,
+        background: "#0f172a",
+        color: "#fff",
+        confirmButtonColor: "#3b82f6",
+      });
+      return false;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      Swal.fire({
+        icon: "error",
+        title: "Format Salah",
+        text: "Hanya file gambar yang diperbolehkan.",
+        background: "#0f172a",
+        color: "#fff",
+        confirmButtonColor: "#3b82f6",
+      });
+      return false;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById("imgPrev").src = e.target.result;
+      document.getElementById("previewContainer").classList.remove("hidden");
+      document.getElementById("placeholderUp").classList.add("hidden");
+
+      // Auto switch to upload tab if drop happened
+      if (activeMode !== "upload") {
+        window.switchUI("upload");
+      }
+    };
+    reader.readAsDataURL(file);
+    return true;
+  };
+
   window.previewFile = function (input) {
     if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        document.getElementById("imgPrev").src = e.target.result;
-        document.getElementById("previewContainer").classList.remove("hidden");
-        document.getElementById("placeholderUp").classList.add("hidden");
-      };
-      reader.readAsDataURL(input.files[0]);
+      if (!handleFile(input.files[0])) {
+        input.value = ""; // Reset input if invalid
+      }
     }
+  };
+
+  // --- Full Page Drag and Drop ---
+  window.initDragAndDrop = function () {
+    const overlay = document.getElementById("dropOverlay");
+    if (!overlay) return;
+
+    let dragCounter = 0;
+
+    window.addEventListener("dragenter", (e) => {
+      e.preventDefault();
+      dragCounter++;
+      if (dragCounter === 1) {
+        overlay.classList.remove("hidden");
+        overlay.classList.remove("opacity-0");
+        overlay.classList.add("opacity-100");
+      }
+    });
+
+    window.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      dragCounter--;
+      if (dragCounter === 0) {
+        overlay.classList.add("hidden");
+      }
+    });
+
+    window.addEventListener("dragover", (e) => {
+      e.preventDefault();
+    });
+
+    window.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dragCounter = 0;
+      overlay.classList.add("hidden");
+
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
   };
 
   window.submitData = async function () {
@@ -442,8 +522,9 @@ function initRegistrationPage() {
     if (typeof lucide !== "undefined") lucide.createIcons();
   };
 
-  // Initialize camera on load
+  // Initialize camera & drag-drop on load
   startCam();
+  initDragAndDrop();
 }
 
 // ==========================================

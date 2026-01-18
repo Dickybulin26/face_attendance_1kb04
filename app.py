@@ -12,6 +12,8 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024 # Limit 50MB payload
+
 
 # ============================================
 # 1. FUNGSI GOOGLE SHEETS
