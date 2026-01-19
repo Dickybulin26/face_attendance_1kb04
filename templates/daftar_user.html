@@ -65,7 +65,10 @@
           <div
             class="w-full md:col-span-2 flex justify-center md:justify-start"
           >
-            <div class="relative w-20 h-20 md:w-14 md:h-14">
+            <div
+              class="relative w-20 h-20 md:w-14 md:h-14 cursor-pointer"
+              onclick="showImageModal('{{ user.image_preview }}', '{{ user.nama }}')"
+            >
               <div
                 class="absolute inset-0 bg-blue-500/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity"
               ></div>
@@ -75,6 +78,7 @@
                 {% if user.image_preview %}
                 <img
                   src="{{ user.image_preview }}"
+                  alt="{{ user.nama }} Biometric"
                   class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 {% else %}

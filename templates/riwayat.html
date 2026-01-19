@@ -1,7 +1,5 @@
 {% extends "base.html" %} {% block title %}System Logs - AbsensiPro{% endblock
-%} {% block head %}
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-{% endblock %} {% block content %}
+%} {% block head %} {% endblock %} {% block content %}
 <main
   class="max-w-7xl mx-auto p-4 md:p-6 flex flex-col lg:grid lg:grid-cols-12 gap-6 min-h-screen lg:h-[calc(100vh-80px)] lg:overflow-hidden page-animate"
 >
@@ -129,7 +127,7 @@
           onclick="deleteAllLogs()"
           class="text-[10px] font-black text-red-500/40 hover:text-red-500 uppercase transition-colors tracking-widest"
         >
-          Wipe Database
+          Clear Logs
         </button>
       </div>
     </div>

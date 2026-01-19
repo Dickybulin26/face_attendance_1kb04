@@ -1,11 +1,35 @@
+version: '3.8'
+
 services:
   web:
-    build: .
-    container_name: face_attendance_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: absensipro_staging
     ports:
       - "1324:1324"
     volumes:
+      # Mount known_faces for persistent face data
       - ./known_faces:/app/known_faces
+      # Mount credentials (ensure this file exists)
+      - ./credentials.json:/app/credentials.json:ro
+    environment:
+      # Override .env values if needed for staging
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5000
+      - FLASK_DEBUG=False
     env_file:
       - .env
-    restart: always
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1324/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - absensipro_network
+
+networks:
+  absensipro_network:
+    driver: bridge

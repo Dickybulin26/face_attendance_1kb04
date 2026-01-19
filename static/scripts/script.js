@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Login Logic (Login Page) ---
-  const loginForm = document.querySelector("form.space-y-6");
+  const loginForm = document.getElementById("loginForm");
   if (loginForm) {
     initLoginPage();
   }
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // LOGIN PAGE LOGIC
 // ==========================================
 function initLoginPage() {
-  const form = document.querySelector("form");
+  const form = document.getElementById("loginForm");
   if (!form) return;
 
   form.addEventListener("submit", async function (e) {
@@ -418,7 +418,8 @@ function initRegistrationPage() {
     });
   };
 
-  window.submitData = async function () {
+  window.submitData = async function (e) {
+    if (e) e.preventDefault();
     const nama = document.getElementById("nama").value.trim();
     if (!nama) {
       return Swal.fire({
@@ -491,7 +492,7 @@ function initRegistrationPage() {
         Swal.fire({
           icon: "error",
           title: "Gagal",
-          text: "Pastikan izin kamera aktif dan tidak sedang digunakan aplikasi lain.",
+          text: d.message || "Terjadi kesalahan saat mendaftarkan wajah.",
           background: "#0f172a",
           color: "#fff",
           confirmButtonColor: "#3b82f6",
@@ -522,6 +523,14 @@ function initRegistrationPage() {
     if (typeof lucide !== "undefined") lucide.createIcons();
   };
 
+  // Handle form submission (e.g. when Enter is pressed)
+  if (addFaceForm) {
+    addFaceForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      window.submitData();
+    });
+  }
+
   // Initialize camera & drag-drop on load
   startCam();
   initDragAndDrop();
@@ -533,30 +542,56 @@ function initRegistrationPage() {
 function initHistoryPage() {
   // Expose functions to window for onclick handlers
   window.deleteLog = function (logId) {
-    if (!confirm("Hapus data ini dari riwayat?")) return;
-    fetch(`/delete_log/${logId}`, { method: "POST" })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.status === "success") {
-          const card = document.getElementById(`log-${logId}`);
-          // Animasi hapus
-          if (card) {
-            card.style.transform = "translateX(20px)";
-            card.style.opacity = "0";
-            setTimeout(() => {
-              card.remove();
-              if (window.calendarInstance)
-                window.calendarInstance.refetchEvents();
-            }, 300);
-          }
-        }
-      });
+    Swal.fire({
+      title: "Hapus Log?",
+      text: "Data ini akan dihapus dari riwayat pendaftaran.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#334155",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+      background: "#0f172a",
+      color: "#fff",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(`/delete_log/${logId}`, { method: "POST" })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.status === "success") {
+              const card = document.getElementById(`log-${logId}`);
+              if (card) {
+                card.style.transform = "translateX(20px)";
+                card.style.opacity = "0";
+                setTimeout(() => {
+                  card.remove();
+                  if (window.calendarInstance)
+                    window.calendarInstance.refetchEvents();
+                }, 300);
+              }
+            }
+          });
+      }
+    });
   };
 
   window.deleteAllLogs = function () {
-    if (confirm("PERINGATAN: Semua data akan dihapus permanen!")) {
-      window.location.href = "/clear_logs";
-    }
+    Swal.fire({
+      title: "Clear All Logs?",
+      text: "PERINGATAN: Semua data riwayat akan dihapus secara permanen!",
+      icon: "error",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#334155",
+      confirmButtonText: "Ya, Bersihkan Semua!",
+      cancelButtonText: "Batal",
+      background: "#0f172a",
+      color: "#fff",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = "/clear_logs";
+      }
+    });
   };
 
   // --- Search Logic ---
@@ -868,4 +903,31 @@ function initUserDatabasePage() {
       });
     }
   };
+
+  // --- Image Preview Modal Logic ---
+  window.showImageModal = function (imgUrl, name) {
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImage");
+    const modalName = document.getElementById("modalName");
+
+    if (!modal || !modalImg || !modalName) return;
+
+    modalImg.src = imgUrl;
+    modalName.innerText = name;
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden"; // Prevent scrolling
+  };
+
+  window.closeImageModal = function () {
+    const modal = document.getElementById("imageModal");
+    if (!modal) return;
+
+    modal.classList.remove("active");
+    document.body.style.overflow = ""; // Enable scrolling
+  };
+
+  // Close on Escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeImageModal();
+  });
 }

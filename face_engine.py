@@ -79,17 +79,20 @@ class FaceEngine:
             img_rgb = self.process_base64_image(base64_image)
             
             # --- FITUR ANTI GAGAL DETEKSI ---
-            # number_of_times_to_upsample=2 artinya zoom in 2x secara digital
-            # Ini mengatasi masalah webcam yang resolusinya rendah/pecah
-            face_locations = face_recognition.face_locations(img_rgb, number_of_times_to_upsample=2)
+            # number_of_times_to_upsample=1 adalah balance antara speed & akurasi
+            face_locations = face_recognition.face_locations(img_rgb, number_of_times_to_upsample=1)
             
             if not face_locations:
                 # Coba sekali lagi dengan kontras tinggi jika gagal
                 img_enhanced = cv2.convertScaleAbs(img_rgb, alpha=1.5, beta=20)
-                face_locations = face_recognition.face_locations(img_enhanced, number_of_times_to_upsample=2)
+                face_locations = face_recognition.face_locations(img_enhanced, number_of_times_to_upsample=1)
                 
                 if not face_locations:
                     return False, "Wajah tidak ditemukan. Coba mendekat ke kamera."
+
+            # --- VALIDASI: HANYA BOLEH 1 WAJAH ---
+            if len(face_locations) > 1:
+                return False, "Hanya diperbolehkan 1 wajah dalam 1 gambar!"
 
             # Ambil encoding
             face_encodings = face_recognition.face_encodings(img_rgb, face_locations)
@@ -102,8 +105,9 @@ class FaceEngine:
             file_path = os.path.join(self.known_faces_dir, f"{nama}.jpg")
             cv2.imwrite(file_path, img_bgr)
             
-            # --- PENTING: RELOAD AGAR TIDAK ERROR ---
-            self.load_known_faces() 
+            # --- OPTIMASI: APPEND KE MEMORY TANPA FULL RELOAD ---
+            self.known_encodings.append(face_encodings[0])
+            self.known_names.append(nama)
             
             return True, f"Berhasil! Wajah {nama} disimpan."
 

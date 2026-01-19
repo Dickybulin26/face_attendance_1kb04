@@ -10,17 +10,47 @@
     />
     <title>{% block title %}AbsensiPro{% endblock %}</title>
 
+    <!-- SEO Meta Tags -->
+    <meta
+      name="description"
+      content="AbsensiPro Security System - Advanced Face Recognition Attendance System powered by AI. Secure, fast, and reliable biometric verified attendance."
+    />
+    <meta
+      name="keywords"
+      content="AbsensiPro, Face Recognition, Attendance System, Biometric Security, AI Attendance"
+    />
+    <meta name="author" content="Farell Rhezky & Dicky Asqaelani" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://absensipro.com/" />
+    <meta property="og:title" content="AbsensiPro - AI Security System" />
+    <meta
+      property="og:description"
+      content="Advanced Face Recognition Attendance System powered by AI."
+    />
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#020617" />
+
     <link
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
       rel="stylesheet"
     />
+    <!-- Vite Assets -->
+    {% if config['DEBUG'] %}
+    <script type="module" src="http://localhost:5173/@vite/client"></script>
+    <script type="module" src="http://localhost:5173/src/main.js"></script>
+    {% else %}
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='styles/style.css') }}"
+      href="{{ url_for('static', filename='dist/assets/main.css') }}"
     />
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    {% block head %}{% endblock %}
+    <script
+      type="module"
+      src="{{ url_for('static', filename='dist/assets/main.js') }}"
+    ></script>
+    {% endif %} {% block head %}{% endblock %}
   </head>
   <body>
     <div id="app-wrapper" class="flex flex-col min-h-screen page-animate">
@@ -173,7 +203,36 @@
       </div>
     </nav>
 
-    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+    <!-- Image Preview Modal -->
+    <div
+      id="imageModal"
+      class="image-modal"
+      onclick="closeImageModal()"
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
+      onkeydown="if (event.key === 'Escape') closeImageModal();"
+    >
+      <div class="image-modal-content" onclick="event.stopPropagation()">
+        <button
+          class="image-modal-close"
+          onclick="closeImageModal()"
+          aria-label="Close Preview"
+        >
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+        <img
+          id="modalImage"
+          src=""
+          alt="Biometric Preview"
+          class="image-modal-img"
+        />
+        <div class="image-modal-info">
+          <h3 id="modalName" class="image-modal-name"></h3>
+        </div>
+      </div>
+    </div>
+
     {% block extra_scripts %}{% endblock %}
   </body>
 </html>

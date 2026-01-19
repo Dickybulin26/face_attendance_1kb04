@@ -1,8 +1,6 @@
-
 # AbsensiPro: Face Recognition Attendance System
 
 **Sistem Absensi Berbasis Pengenalan Wajah dengan Antarmuka Modern Dark Glassmorphism.**
-
 
 **Projek Semester 1 - Algoritma Pemrograman 1C**<br>
 **Kontributor: Kelas 1KB04 - Sistem Komputer - Universitas Gunadarma**
@@ -15,11 +13,11 @@
 
 ### Fitur Utama
 
-* **Real-time Recognition**: Deteksi dan identifikasi wajah secara instan.
-* **Modern UI/UX**: Antarmuka berbasis *Dark Glassmorphism* dengan animasi *scanning line* yang halus.
-* **Admin Dashboard**: Kendali penuh untuk registrasi wajah baru dan manajemen data log.
-* **Cloud Integration**: Penyimpanan log kehadiran permanen dan aman di MongoDB Atlas.
-* **Anti-Spam System**: Mekanisme *cooldown* 10 detik untuk mencegah duplikasi data absensi dalam waktu singkat.
+- **Real-time Recognition**: Deteksi dan identifikasi wajah secara instan.
+- **Modern UI/UX**: Antarmuka berbasis _Dark Glassmorphism_ dengan animasi _scanning line_ yang halus.
+- **Admin Dashboard**: Kendali penuh untuk registrasi wajah baru dan manajemen data log.
+- **Cloud Integration**: Penyimpanan log kehadiran permanen dan aman di MongoDB Atlas.
+- **Anti-Spam System**: Mekanisme _cooldown_ 10 detik untuk mencegah duplikasi data absensi dalam waktu singkat.
 
 ---
 
@@ -46,9 +44,11 @@ Tahap ini bertujuan untuk menemukan lokasi koordinat wajah (bounding box) dalam 
 A. Ekstraksi Fitur HOG Sistem menghitung perubahan intensitas piksel (gradien) untuk menangkap kontur wajah.
 
 Magnitudo Gradien:
+
 ### $$M(x,y)=G_x(x,y)^2+G_y(x,y)^2$$
 
 Orientasi Gradien:
+
 ### $$\theta(x,y)=arctan(G_x(x,y)G_y(x,y))$$
 
 B. Klasifikasi Area Wajah (Linear SVM) Setelah fitur HOG terbentuk, algoritma Linear SVM digunakan untuk memisahkan area "Wajah" dan "Bukan Wajah". SVM bekerja dengan mencari hyperplane pemisah dengan margin maksimal:
@@ -83,54 +83,101 @@ Jika jarak d<0.5, wajah dianggap valid.
 
 ### Prasyarat
 
-* Python 3.11+
-* Docker & Docker Compose (Opsional)
-* Akun MongoDB Atlas
+**Untuk Development Lokal:**
 
-### Instalasi Lokal
+- Python 3.11+
+- Node.js 20+ (untuk frontend build)
+- Akun MongoDB Atlas
+- Google Sheets API credentials
+
+**Untuk Docker Deployment:**
+
+- Docker Engine 20.10+
+- Docker Compose 2.0+
+- `.env` file (copy dari `.env.example`)
+- `credentials.json` untuk Google Sheets
+
+### Instalasi Lokal (Development)
 
 1. **Kloning Repositori**
+
 ```bash
 git clone https://github.com/Dickybulin26/face_attendance_1kb04.git
 cd face_attendance_1kb04
 ```
 
+2. **Konfigurasi Environment**
 
-2. **Konfigurasi Database**
-Edit `app.py` dan masukkan URI MongoDB Atlas Anda:
-```python
-MONGO_URI = "mongodb+srv://USER:PASSWORD@cluster.mongodb.net/db_absensi"
+```bash
+cp .env.example .env
+# Edit .env dengan kredensial Anda
 ```
 
-3. **Membuat Virtual Environment**
+3. **Setup Python Environment**
+
 ```bash
 python -m venv .venv
-.venv\Scripts\activate
-```
-
-4. **Instalasi Dependencies**
-```bash
+.venv\Scripts\activate  # Windows
+# source .venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
+4. **Setup Frontend**
+
+```bash
+npm install
+npm run build  # Build production assets
+```
+
 5. **Jalankan Aplikasi**
+
 ```bash
+# Terminal 1: Flask Backend
 python app.py
+
+# Terminal 2 (Optional): Vite Dev Server untuk development
+npm run dev
 ```
 
+Akses aplikasi di `http://localhost:5000`
 
-### Instalasi via Docker
+### 🐳 Instalasi via Docker (Recommended untuk Production)
+
+**Quick Start:**
 
 ```bash
-docker-compose build --no-cache
+# 1. Setup environment
+cp .env.example .env
+# Edit .env dengan kredensial Anda
+
+# 2. Build dan jalankan
+docker-compose build
 docker-compose up -d
+
+# 3. Cek status
+docker-compose ps
+docker-compose logs -f web
 ```
+
+**Menggunakan Helper Script:**
+
+```bash
+chmod +x deploy.sh
+./deploy.sh build   # Build image
+./deploy.sh start   # Start aplikasi
+./deploy.sh status  # Cek status
+./deploy.sh logs    # Lihat logs
+```
+
+Akses aplikasi di `http://localhost:5000`
+
+**Dokumentasi lengkap:** Lihat [Docker Deployment Guide](docker_deployment.md)
 
 ---
 
 ## Cara Penggunaan
 
-1. Akses aplikasi di `http://localhost:1324` (atau URL Ngrok jika di-deploy).
+1. Akses aplikasi di `http://localhost:5000` (atau URL deployment Anda).
 2. **Pendaftaran**: Masuk ke menu **Admin > Tambah Wajah**. Ambil foto wajah dengan pencahayaan yang cukup.
 3. **Absensi**: Kembali ke Dashboard, sistem akan otomatis melakukan scanning. Jika wajah dikenali, status "Berhasil Absen" akan muncul.
 4. **Riwayat**: Pantau kehadiran di tabel **Riwayat**. Admin memiliki otoritas untuk menghapus log jika terjadi kesalahan.
@@ -139,13 +186,14 @@ docker-compose up -d
 
 ## Catatan Teknis
 
-* **Kualitas Kamera**: Gunakan kamera dengan resolusi minimal 720p untuk hasil terbaik.
-* **Pencahayaan**: Pastikan wajah menghadap sumber cahaya saat pendaftaran.
-* **Keamanan**: Data wajah diproses secara lokal di server sebelum dikirim ke database dalam bentuk log teks (bukan gambar mentah), sehingga menjaga privasi pengguna.
+- **Kualitas Kamera**: Gunakan kamera dengan resolusi minimal 720p untuk hasil terbaik.
+- **Pencahayaan**: Pastikan wajah menghadap sumber cahaya saat pendaftaran.
+- **Keamanan**: Data wajah diproses secara lokal di server sebelum dikirim ke database dalam bentuk log teks (bukan gambar mentah), sehingga menjaga privasi pengguna.
 
 ---
 
 Sumber Referensi:
+
 - Analysis of Face Recognition Algorithm: Dlib and OpenCV (https://www.researchgate.net/publication/343718108_Analysis_of_Face_Recognition_Algorithm_Dlib_and_OpenCV)
 - Histogram of Oriented Gradients (https://www.geeksforgeeks.org/computer-vision/histogram-of-oriented-gradients)
 - C34 | HOG Feature Vector Calculation | Computer Vision | Object Detection | EvODN (https://youtu.be/28xk5i1_7Zc)

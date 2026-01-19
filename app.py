@@ -20,31 +20,53 @@ app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024 # Limit 50MB payload
 # ============================================
 
 
-def log_to_sheets(user_name, user_id):
+import threading
+
+# Global variables for Sheets
+sheets_client = None
+sheets_file = None
+
+def get_sheets_client():
+    global sheets_client, sheets_file
+    if sheets_client is None:
+        try:
+            scope = ["https://spreadsheets.google.com/feeds",
+                     "https://www.googleapis.com/auth/drive"]
+            creds = ServiceAccountCredentials.from_json_keyfile_name(
+                os.getenv("GOOGLE_SHEETS_CREDENTIALS"), scope)
+            sheets_client = gspread.authorize(creds)
+            sheets_file = sheets_client.open(os.getenv("GOOGLE_SHEETS_NAME")).sheet1
+            print("✅ Connected to Google Sheets")
+        except Exception as e:
+            print(f"❌ Failed to connect to Sheets: {e}")
+            sheets_client = None
+            sheets_file = None
+    return sheets_file
+
+def _log_to_sheets_thread(user_name, user_id):
     try:
-        # Setup koneksi
-        scope = ["https://spreadsheets.google.com/feeds",
-                 "https://www.googleapis.com/auth/drive"]
-        creds = ServiceAccountCredentials.from_json_keyfile_name(
-            os.getenv("GOOGLE_SHEETS_CREDENTIALS"), scope)
-        client = gspread.authorize(creds)
-
-        # Buka spreadsheet (Pastikan nama file di Google Drive SAMA PERSIS)
-        sheet = client.open(os.getenv("GOOGLE_SHEETS_NAME")).sheet1
-
-        # Siapkan data
-        now = datetime.now()
-        date_string = now.strftime("%d-%m-%Y")
-        time_string = now.strftime("%H:%M:%S")
-
-        row = [date_string, time_string, user_name, user_id]
-
-        # Masukkan data ke baris terakhir
-        sheet.append_row(row)
-        print(f"✅ Berhasil mencatat absen {user_name} ke Google Sheets")
-
+        sheet = get_sheets_client()
+        if sheet:
+            now = datetime.now()
+            row = [
+                now.strftime("%d-%m-%Y"),
+                now.strftime("%H:%M:%S"),
+                user_name,
+                user_id
+            ]
+            sheet.append_row(row)
+            print(f"✅ [Background] Logged {user_name} to Sheets")
     except Exception as e:
-        print(f"❌ Gagal menyambung ke Sheets: {e}")
+        print(f"❌ [Background] Sheets Error: {e}")
+        # Reset client to force reconnect next time
+        global sheets_client
+        sheets_client = None
+
+def log_to_sheets(user_name, user_id):
+    # Run in background string to avoid blocking response
+    thread = threading.Thread(target=_log_to_sheets_thread, args=(user_name, user_id))
+    thread.daemon = True
+    thread.start()
 
 
 # ============================================
@@ -163,7 +185,8 @@ def edit_user(id):
         users_collection.update_one({"_id": ObjectId(id)}, {
                                     "$set": {"nama": new_nama}})
         return jsonify({"status": "success"})
-    except:
+    except Exception as e:
+        print(f"Error editing user: {e}")
         return jsonify({"status": "error"})
 
 
@@ -174,7 +197,8 @@ def delete_user(id):
     try:
         users_collection.delete_one({"_id": ObjectId(id)})
         return jsonify({"status": "success"})
-    except:
+    except Exception as e:
+        print(f"Error deleting user: {e}")
         return jsonify({"status": "error"})
 
 
@@ -308,5 +332,6 @@ def calendar_events():
 if __name__ == '__main__':
     host = os.getenv("FLASK_HOST")
     port = os.getenv("FLASK_PORT")
-    debug = os.getenv("FLASK_DEBUG")
-    app.run(host=host, port=port, debug=debug)
+    debug = os.getenv("FLASK_DEBUG", "False").lower() == "true"
+    app.config['DEBUG'] = debug
+    app.run(host=host, port=int(port) if port else 5000, debug=debug)
