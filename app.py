@@ -1,3 +1,4 @@
+import threading
 import os
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -12,7 +13,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024 # Limit 50MB payload
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # Limit 50MB payload
 
 
 # ============================================
@@ -20,11 +21,10 @@ app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024 # Limit 50MB payload
 # ============================================
 
 
-import threading
-
 # Global variables for Sheets
 sheets_client = None
 sheets_file = None
+
 
 def get_sheets_client():
     global sheets_client, sheets_file
@@ -35,13 +35,15 @@ def get_sheets_client():
             creds = ServiceAccountCredentials.from_json_keyfile_name(
                 os.getenv("GOOGLE_SHEETS_CREDENTIALS"), scope)
             sheets_client = gspread.authorize(creds)
-            sheets_file = sheets_client.open(os.getenv("GOOGLE_SHEETS_NAME")).sheet1
-            print("✅ Connected to Google Sheets")
+            sheets_file = sheets_client.open(
+                os.getenv("GOOGLE_SHEETS_NAME")).sheet1
+            print("Connected to Google Sheets")
         except Exception as e:
-            print(f"❌ Failed to connect to Sheets: {e}")
+            print(f"Failed to connect to Sheets: {e}")
             sheets_client = None
             sheets_file = None
     return sheets_file
+
 
 def _log_to_sheets_thread(user_name, user_id):
     try:
@@ -55,16 +57,18 @@ def _log_to_sheets_thread(user_name, user_id):
                 user_id
             ]
             sheet.append_row(row)
-            print(f"✅ [Background] Logged {user_name} to Sheets")
+            print(f"[Background] Logged {user_name} to Sheets")
     except Exception as e:
-        print(f"❌ [Background] Sheets Error: {e}")
+        print(f"[Background] Sheets Error: {e}")
         # Reset client to force reconnect next time
         global sheets_client
         sheets_client = None
 
+
 def log_to_sheets(user_name, user_id):
     # Run in background string to avoid blocking response
-    thread = threading.Thread(target=_log_to_sheets_thread, args=(user_name, user_id))
+    thread = threading.Thread(
+        target=_log_to_sheets_thread, args=(user_name, user_id))
     thread.daemon = True
     thread.start()
 
@@ -79,9 +83,9 @@ try:
     db = client['db_absensi']
     collection = db['log_absensi']        # Riwayat Absen
     users_collection = db['daftar_wajah']  # Data Wajah
-    print("✅ Berhasil Terhubung ke MongoDB Atlas")
+    print("Berhasil Terhubung ke MongoDB Atlas")
 except Exception as e:
-    print(f"❌ Gagal Database: {e}")
+    print(f"Gagal Database: {e}")
 
 if not os.path.exists('known_faces'):
     os.makedirs('known_faces')
@@ -209,29 +213,29 @@ def delete_all_users():
     try:
         # Get count before deletion
         deleted_count = users_collection.count_documents({})
-        
+
         # Delete all users from database
         users_collection.delete_many({})
-        
+
         # Delete all face encodings from known_faces directory
         import shutil
         known_faces_dir = "known_faces"
         if os.path.exists(known_faces_dir):
             shutil.rmtree(known_faces_dir)
             os.makedirs(known_faces_dir)
-        
+
         # Reload face engine
         face_engine.load_known_faces()
-        
+
         return jsonify({
-            "status": "success", 
+            "status": "success",
             "deleted_count": deleted_count,
             "message": f"Successfully deleted {deleted_count} biometric records"
         })
     except Exception as e:
         print(f"Error deleting all users: {e}")
         return jsonify({
-            "status": "error", 
+            "status": "error",
             "message": str(e)
         }), 500
 
@@ -302,19 +306,20 @@ def register_face():
     data = request.json
     nama = data.get('nama')
     img_data = data.get('image')
-    
+
     # Register face with original image for face recognition
     success, msg = face_engine.register_face(nama, img_data)
-    
+
     if success:
         # Compress image for database storage (preview only)
         try:
-            compressed_image = compress_base64_image(img_data, max_width=400, quality=85)
-            print(f"✅ Image compressed successfully for {nama}")
+            compressed_image = compress_base64_image(
+                img_data, max_width=400, quality=85)
+            print(f"Image compressed successfully for {nama}")
         except Exception as e:
-            print(f"⚠️ Image compression failed, using original: {e}")
+            print(f"Image compression failed, using original: {e}")
             compressed_image = img_data
-        
+
         # Save to database with compressed image
         users_collection.insert_one({
             "nama": nama,

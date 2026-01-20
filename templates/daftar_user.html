@@ -56,12 +56,13 @@
 
     <div id="scrollArea" class="flex-1 overflow-y-auto tech-scroll p-6">
       <div id="userList" class="space-y-3">
-        {% for user in users %}
+        {% if users %} {% for user in users %}
         <div
           id="row-{{ user._id }}"
           data-search="{{ user.nama|lower }} {{ (user._id|string)[-8:]|lower }}"
           class="user-row flex flex-col md:grid md:grid-cols-12 gap-4 items-center px-6 py-4 rounded-2xl border border-white/5 bg-slate-900/20 backdrop-blur-sm group"
         >
+          <!-- ... row content ... -->
           <div
             class="w-full md:col-span-2 flex justify-center md:justify-start"
           >
@@ -159,7 +160,24 @@
             </button>
           </div>
         </div>
-        {% endfor %}
+        {% endfor %} {% else %}
+        <div class="flex flex-col items-center justify-center py-20">
+          <div class="empty-state">
+            <i
+              data-lucide="search-x"
+              class="w-16 h-16 text-slate-800 mb-4"
+            ></i>
+          </div>
+          <h3
+            class="text-slate-400 font-bold uppercase tracking-widest text-xs"
+          >
+            Database is Empty
+          </h3>
+          <p class="text-slate-600 text-[10px] mt-2 italic uppercase">
+            No registered identities found
+          </p>
+        </div>
+        {% endif %}
 
         <div
           id="noResult"
