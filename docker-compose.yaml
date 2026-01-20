@@ -1,14 +1,15 @@
-version: '3.8'
 
 services:
   web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: absensipro_staging
+    container_name: absensipro
     ports:
       - "1324:1324"
     volumes:
+      # Mount the entire directory for live code changes
+      - .:/app
       # Mount known_faces for persistent face data
       - ./known_faces:/app/known_faces
       # Mount credentials (ensure this file exists)
@@ -16,7 +17,7 @@ services:
     environment:
       # Override .env values if needed for staging
       - FLASK_HOST=0.0.0.0
-      - FLASK_PORT=5000
+      - FLASK_PORT=1324
       - FLASK_DEBUG=False
     env_file:
       - .env

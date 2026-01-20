@@ -21,7 +21,7 @@ class FaceEngine:
         if not os.path.exists(self.known_faces_dir):
             os.makedirs(self.known_faces_dir)
             
-        print("🔄 Sedang memuat ulang database wajah...")
+        print("Sedang memuat ulang database wajah...")
         
         for filename in os.listdir(self.known_faces_dir):
             if filename.endswith((".jpg", ".png", ".jpeg")):
@@ -33,9 +33,9 @@ class FaceEngine:
                         self.known_encodings.append(encoding[0])
                         self.known_names.append(os.path.splitext(filename)[0])
                 except Exception as e:
-                    print(f"⚠️ Gagal memuat {filename}: {e}")
+                    print(f"Gagal memuat {filename}: {e}")
         
-        print(f"✅ Database siap! Total user: {len(self.known_names)}")
+        print(f"Database siap! Total user: {len(self.known_names)}")
 
     def process_base64_image(self, base64_string):
         """Mengubah string dari webcam menjadi gambar OpenCV"""
