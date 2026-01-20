@@ -170,7 +170,17 @@ function initScannerPage() {
       width: isMobile ? 720 : 1280,
       height: isMobile ? 1280 : 720,
     });
-    camera.start();
+    camera.start().catch((e) => {
+      console.error("Camera detection error:", e);
+      Swal.fire({
+        icon: "error",
+        title: "Kamera Tidak Terdeteksi",
+        text: "Gagal mengakses feed kamera. Pastikan izin kamera aktif dan tidak sedang digunakan aplikasi lain.",
+        background: "#0f172a",
+        color: "#fff",
+        confirmButtonColor: "#3b82f6",
+      });
+    });
   }
 
   // --- Process Scan API ---
@@ -892,16 +902,115 @@ function initUserDatabasePage() {
   };
 
   window.deleteUser = function (id) {
-    if (confirm("WARNING: Permanent deletion of biometric data. Proceed?")) {
-      fetch(`/delete_user/${id}`, { method: "POST" }).then((res) => {
-        if (res.ok) {
-          const row = document.getElementById(`row-${id}`);
-          row.style.transform = "translateX(50px)";
-          row.style.opacity = "0";
-          setTimeout(() => row.remove(), 300);
-        }
-      });
-    }
+    Swal.fire({
+      title: "Hapus Data Biometrik?",
+      text: "PERINGATAN: Data wajah akan dihapus secara permanen dan tidak dapat dikembalikan!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#334155",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+      background: "#0f172a",
+      color: "#fff",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(`/delete_user/${id}`, { method: "POST" }).then((res) => {
+          if (res.ok) {
+            Swal.fire({
+              icon: "success",
+              title: "Berhasil Dihapus!",
+              text: "Data biometrik telah dihapus dari sistem.",
+              showConfirmButton: false,
+              timer: 1500,
+              background: "#0f172a",
+              color: "#fff",
+            });
+            const row = document.getElementById(`row-${id}`);
+            row.style.transform = "translateX(50px)";
+            row.style.opacity = "0";
+            setTimeout(() => row.remove(), 300);
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Gagal Menghapus",
+              text: "Terjadi kesalahan saat menghapus data.",
+              background: "#0f172a",
+              color: "#fff",
+              confirmButtonColor: "#3b82f6",
+            });
+          }
+        });
+      }
+    });
+  };
+
+  window.deleteAllUsers = function () {
+    Swal.fire({
+      title: "Hapus Semua Data Biometrik?",
+      text: "PERINGATAN KRITIS: Semua data wajah akan dihapus secara permanen dan tidak dapat dikembalikan!",
+      icon: "error",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#334155",
+      confirmButtonText: "Ya, Hapus Semua!",
+      cancelButtonText: "Batal",
+      background: "#0f172a",
+      color: "#fff",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Show loading
+        Swal.fire({
+          title: "Menghapus...",
+          text: "Mohon tunggu, sedang menghapus semua data biometrik.",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          showConfirmButton: false,
+          background: "#0f172a",
+          color: "#fff",
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        fetch("/delete_all_users", { method: "POST" })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "success") {
+              Swal.fire({
+                icon: "success",
+                title: "Berhasil!",
+                text: `${data.deleted_count} data biometrik telah dihapus.`,
+                showConfirmButton: false,
+                timer: 2000,
+                background: "#0f172a",
+                color: "#fff",
+              }).then(() => {
+                location.reload();
+              });
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Gagal",
+                text: data.message || "Terjadi kesalahan saat menghapus data.",
+                background: "#0f172a",
+                color: "#fff",
+                confirmButtonColor: "#3b82f6",
+              });
+            }
+          })
+          .catch((err) => {
+            Swal.fire({
+              icon: "error",
+              title: "System Error",
+              text: "Gagal terhubung ke server.",
+              background: "#0f172a",
+              color: "#fff",
+              confirmButtonColor: "#3b82f6",
+            });
+          });
+      }
+    });
   };
 
   // --- Image Preview Modal Logic ---
@@ -931,3 +1040,24 @@ function initUserDatabasePage() {
     if (e.key === "Escape") closeImageModal();
   });
 }
+
+// --- Global Logout Confirmation ---
+window.confirmLogout = function (e) {
+  if (e) e.preventDefault();
+  Swal.fire({
+    title: "Keluar dari Sistem?",
+    text: "Anda akan mengakhiri sesi akses saat ini.",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#334155",
+    confirmButtonText: "Ya, Keluar",
+    cancelButtonText: "Batal",
+    background: "#0f172a",
+    color: "#fff",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = "/logout";
+    }
+  });
+};

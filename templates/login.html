@@ -3,15 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="{{ url_for('static', filename='favicon.svg') }}"
+    />
     <title>Login - AbsensiPro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Vite Assets -->
+    {% if config['DEBUG'] %}
+    <script type="module" src="http://localhost:5173/@vite/client"></script>
+    <script type="module" src="http://localhost:5173/src/main.js"></script>
+    {% else %}
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dist/assets/main.css') }}"
+    />
+    <script
+      type="module"
+      src="{{ url_for('static', filename='dist/assets/main.js') }}"
+    ></script>
+    {% endif %}
+
     <link
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap"
       rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='styles/style.css') }}"
     />
   </head>
   <body
@@ -21,18 +37,31 @@
       class="login-glass p-10 rounded-[40px] w-full max-w-md shadow-2xl mx-4 animate-fade-in"
     >
       <div class="text-center mb-10">
-        <div
-          class="w-16 h-16 bg-gradient-to-br from-[#59adff] to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/20"
-        >
-          <span class="text-white text-3xl">📷</span>
+        <div class="flex items-center justify-center gap-3">
+          <div
+            class="w-10 h-10 md:w-11 md:h-11 bg-blue-600/10 rounded-2xl flex items-center justify-center border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+          >
+            <i
+              data-lucide="shield-check"
+              class="text-blue-400 w-5 h-5 md:w-6 md:h-6"
+            ></i>
+          </div>
+          <div class="flex flex-col">
+            <span
+              class="font-black text-base md:text-[2rem] tracking-tighter uppercase leading-none"
+              >Absensi<span class="text-blue-500">Pro</span></span
+            >
+          </div>
         </div>
-        <h2 class="text-2xl font-bold text-white tracking-tighter">
-          Absensi<span class="text-[#59adff]">Pro</span>
-        </h2>
         <p
           class="text-slate-500 text-[10px] uppercase tracking-[0.3em] mt-3 font-bold"
         >
-          Secure Access Terminal
+          Attendance System By 1KB04
+        </p>
+        <p
+          class="text-slate-500 text-[10px] uppercase tracking-[0.3em] mt-1 font-bold"
+        >
+          Computer System - Gunadarma University
         </p>
       </div>
       <form id="loginForm" method="POST" class="space-y-6">
@@ -62,7 +91,5 @@
         </button>
       </form>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
   </body>
 </html>

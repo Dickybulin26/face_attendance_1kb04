@@ -50,7 +50,7 @@
     >
       <div class="col-span-2">Biometric</div>
       <div class="col-span-5">Identity Profile</div>
-      <div class="col-span-2 text-center">Security</div>
+      <div class="col-span-2 text-center">Status</div>
       <div class="col-span-3 text-right">System Action</div>
     </div>
 
@@ -186,12 +186,15 @@
     <div
       class="px-10 py-4 bg-black/20 border-t border-white/5 flex justify-between items-center"
     >
-      <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">
-        Biometric Data Encryption: AES-256
-      </p>
-      <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">
+      <p class="text-[10px] text-slate-600 font-bold tracking-widest uppercase">
         Total Nodes: {{ users|length }}
       </p>
+      <button
+        onclick="deleteAllUsers()"
+        class="text-[10px] font-black text-red-500/40 hover:text-red-500 uppercase transition-colors tracking-widest"
+      >
+        Clear All Data
+      </button>
     </div>
   </div>
 </main>

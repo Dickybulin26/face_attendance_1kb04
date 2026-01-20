@@ -23,6 +23,11 @@ import {
   CheckCircle,
   ArrowRight,
   Plus,
+  User,
+  Camera as CameraIcon,
+  Upload,
+  ImagePlus,
+  SearchX,
 } from "lucide";
 import Swal from "sweetalert2";
 import { Calendar } from "@fullcalendar/core";
@@ -66,6 +71,11 @@ window.lucide = {
         CheckCircle,
         ArrowRight,
         Plus,
+        User,
+        Camera: CameraIcon,
+        Upload,
+        ImagePlus,
+        SearchX,
       },
     });
   },

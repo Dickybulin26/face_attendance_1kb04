@@ -202,6 +202,40 @@ def delete_user(id):
         return jsonify({"status": "error"})
 
 
+@app.route('/delete_all_users', methods=['POST'])
+def delete_all_users():
+    if session.get('role') != 'admin':
+        return jsonify({"status": "error", "message": "Unauthorized"}), 403
+    try:
+        # Get count before deletion
+        deleted_count = users_collection.count_documents({})
+        
+        # Delete all users from database
+        users_collection.delete_many({})
+        
+        # Delete all face encodings from known_faces directory
+        import shutil
+        known_faces_dir = "known_faces"
+        if os.path.exists(known_faces_dir):
+            shutil.rmtree(known_faces_dir)
+            os.makedirs(known_faces_dir)
+        
+        # Reload face engine
+        face_engine.load_known_faces()
+        
+        return jsonify({
+            "status": "success", 
+            "deleted_count": deleted_count,
+            "message": f"Successfully deleted {deleted_count} biometric records"
+        })
+    except Exception as e:
+        print(f"Error deleting all users: {e}")
+        return jsonify({
+            "status": "error", 
+            "message": str(e)
+        }), 500
+
+
 @app.route('/delete_log/<id>', methods=['POST'])
 def delete_log(id):
     if session.get('role') != 'admin':
