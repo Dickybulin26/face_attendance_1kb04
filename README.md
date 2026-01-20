@@ -68,8 +68,6 @@ $$f(x) = \text{sign}(w^T x + b)$$
 Cropped facial regions are passed through a deep convolutional neural network (ResNet-34) to generate a unique 128-dimensional embedding vector $v$.
 $$v = f_{ResNet}(x)$$
 
-<img src="https://www.researchgate.net/profile/Xisong-Dong/publication/354224999/figure/fig1/AS:1126083944562688@1645490742169/The-structure-of-the-ResNet34-CNN-Network-The-input-of-the-network-is-the-preprocessed.png" width="700" />
-
 ### 4. Identity Mapping: Euclidean Distance Matching
 
 Identities are determined by calculating the $L_2$ distance between the input vector ($S$) and the registered database vectors ($V$).
