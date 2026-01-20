@@ -1,201 +1,158 @@
-# AbsensiPro: Face Recognition Attendance System
+# AbsensiPro: AI-Powered Face Recognition Attendance System
 
-**Sistem Absensi Berbasis Pengenalan Wajah dengan Antarmuka Modern Dark Glassmorphism.**
+**Modern Dark Glassmorphism Interface for Real-Time Biometric Verification.**
 
-**Projek Semester 1 - Algoritma Pemrograman 1C**<br>
-**Kontributor: Kelas 1KB04 - Sistem Komputer - Universitas Gunadarma**
-
----
-
-## Ikhtisar
-
-**AbsensiPro** adalah solusi manajemen kehadiran real-time yang mengintegrasikan algoritma visi komputer tingkat tinggi dengan teknologi cloud. Dirancang untuk kelas **1KB04 Jurusan Sistem Komputer Universitas Gunadarma**, sistem ini menawarkan akurasi deteksi yang dioptimalkan dan penyimpanan database terpusat menggunakan MongoDB Atlas.
-
-### Fitur Utama
-
-- **Real-time Recognition**: Deteksi dan identifikasi wajah secara instan.
-- **Modern UI/UX**: Antarmuka berbasis _Dark Glassmorphism_ dengan animasi _scanning line_ yang halus.
-- **Admin Dashboard**: Kendali penuh untuk registrasi wajah baru dan manajemen data log.
-- **Cloud Integration**: Penyimpanan log kehadiran permanen dan aman di MongoDB Atlas.
-- **Anti-Spam System**: Mekanisme _cooldown_ 10 detik untuk mencegah duplikasi data absensi dalam waktu singkat.
+**Semester 1 Project - Programming Algorithm 1C**<br>
+**Contributors: Class 1KB04 - Computer System - Gunadarma University**
 
 ---
 
-## Analisis Algoritma (Berdasarkan Referensi Ilmiah)
+## Abstract
 
-Sistem ini menerapkan pipeline pengenalan wajah biometrik yang terdiri dari empat tahapan utama. Sistem menggunakan metode gabungan HOG + Linear SVM Classification untuk mendeteksi wajah dan metode Euclidean Distance mengidentifikasi wajah.
+**AbsensiPro** is a high-performance, real-time attendance management solution that integrates advanced computer vision algorithms with cloud technologies. Designed specifically for the **1KB04 Computer System class at Gunadarma University**, this system offers optimized detection accuracy and centralized database storage through MongoDB Atlas. It bridges the gap between traditional manual attendance and automated biometric security.
 
-**1. Pra-pemrosesan Citra (Image Pre-processing)**
+---
 
-Sebelum masuk ke tahap deteksi, citra yang diterima dari stream Base64 mengalami penyesuaian kontras dan kecerahan menggunakan operasi linear pada setiap piksel.
+## Tech Stack
 
-### $$g(x,y)=α⋅I(x,y)+β$$
+| Category          | Technology          | Logo/Badge                                                                                                                                                                                                                          |
+| :---------------- | :------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Language**      | Python 3.11         | ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)                                                                                                                              |
+| **Web Framework** | Flask               | ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)                                                                                                                              |
+| **Frontend**      | Tailwind CSS / Vite | ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white) ![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white) |
+| **Database**      | MongoDB Atlas       | ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)                                                                                                                     |
+| **Reporting**     | Google Sheets API   | ![Google Sheets](https://img.shields.io/badge/Google%20Sheets-34A853?style=for-the-badge&logo=google-sheets&logoColor=white)                                                                                                        |
+| **AI Engine**     | Dlib / OpenCV       | ![OpenCV](https://img.shields.io/badge/opencv-%23white.svg?style=for-the-badge&logo=opencv&logoColor=white)                                                                                                                         |
 
-(Dimana α=1.1 dan β=10)
+---
 
-**2. Deteksi Wajah: HOG & Linear SVM**
+## Key Features
+
+- **Real-time Recognition**: High-speed face detection and identification using optimized HOG algorithms.
+- **Premium UI/UX**: State-of-the-art _Dark Glassmorphism_ design with smooth micro-animations and a dynamic scanning line.
+- **Responsive Design**: Fully optimized for Desktop and Mobile with a floating glass navigation bar.
+- **Admin Dashboard**: Secure terminal for biometric registration, user management, and real-time log monitoring.
+- **Hybrid Logging**: Simultaneous data synchronization with MongoDB Atlas for security and Google Sheets for administrative reporting.
+- **Voice Feedback**: Integrated Smart Voice system for successful attendance confirmation.
+
+---
+
+## Algorithm Analysis (Theoretical Framework)
+
+The system implements a multi-stage biometric processing pipeline based on modern computer vision principles. The architecture utilizes a combination of Histogram of Oriented Gradients (HOG) and Deep Metric Learning via ResNet-34.
+
+### 1. Image Pre-processing & Normalization
+
+Incoming frames from the Base64 stream undergo linear pixel transformation to enhance contrast and brightness, ensuring robust detection under varying lighting conditions.
+$$g(x,y) = \alpha \cdot I(x,y) + \beta$$ <br>
+_(Where α=1.1 and β=10 optimize the dynamic range)._
+
+### 2. Face Detection: HOG & Linear SVM
+
+The system identifies facial bounding boxes using the HOG algorithm classified by a Linear Support Vector Machine.
 
 <img src="https://media.geeksforgeeks.org/wp-content/uploads/20250605131337992934/Output-Image.jpg" width="700" />
 
-Tahap ini bertujuan untuk menemukan lokasi koordinat wajah (bounding box) dalam gambar. Fungsi face_locations pada sistem secara internal mengimplementasikan algoritma Histogram of Oriented Gradients (HOG) yang diklasifikasikan oleh Linear SVM.
+**A. HOG Feature Extraction**: The algorithm calculates pixel intensity gradients to capture the structural contour of the face.
+
+- **Gradient Magnitude**: $M(x,y) = \sqrt{G_x(x,y)^2 + G_y(x,y)^2}$
+- **Gradient Orientation**: $\theta(x,y) = \arctan\left(\frac{G_y(x,y)}{G_x(x,y)}\right)$
 
 <img src="https://user-images.githubusercontent.com/69381013/210751911-ecfa8517-eb60-4d47-b69a-164137d24ed1.png" width="700" />
 
-A. Ekstraksi Fitur HOG Sistem menghitung perubahan intensitas piksel (gradien) untuk menangkap kontur wajah.
+**B. Classification (Linear SVM)**: Features are processed by a hyperplane designed for binary classification (Face vs. Non-Face).
+$$f(x) = \text{sign}(w^T x + b)$$
 
-Magnitudo Gradien:
+### 3. Feature Extraction: 128-D Deep Metric Learning
 
-### $$M(x,y)=G_x(x,y)^2+G_y(x,y)^2$$
+Cropped facial regions are passed through a deep convolutional neural network (ResNet-34) to generate a unique 128-dimensional embedding vector $v$.
+$$v = f_{ResNet}(x)$$
 
-Orientasi Gradien:
+<img src="https://www.researchgate.net/profile/Xisong-Dong/publication/354224999/figure/fig1/AS:1126083944562688@1645490742169/The-structure-of-the-ResNet34-CNN-Network-The-input-of-the-network-is-the-preprocessed.png" width="700" />
 
-### $$\theta(x,y)=arctan(G_x(x,y)G_y(x,y))$$
+### 4. Identity Mapping: Euclidean Distance Matching
 
-B. Klasifikasi Area Wajah (Linear SVM) Setelah fitur HOG terbentuk, algoritma Linear SVM digunakan untuk memisahkan area "Wajah" dan "Bukan Wajah". SVM bekerja dengan mencari hyperplane pemisah dengan margin maksimal:
-
-### $$f(x)=sign(w^Tx+b)$$
-
-Jika f(x)>0, maka area tersebut dikonfirmasi sebagai wajah dan diteruskan ke tahap selanjutnya.
-
-**3. Ekstraksi Fitur: 128-D Deep Metric Learning**
-
-Wajah yang telah dideteksi (di-crop) kemudian diproses oleh jaringan saraf tiruan (ResNet-34) untuk diubah menjadi vektor numerik 128 dimensi (embedding).
-
-### $$v=f_{ResNet}(x)$$
-
-**4. Klasifikasi Identitas: Euclidean Distance**
-
-Untuk menentukan identitas pengguna (misal: "Apakah ini Budi?"), sistem tidak menggunakan SVM, melainkan menggunakan pendekatan geometris Euclidean Distance.
-
-Sistem menghitung jarak L2 antara vektor wajah input (S) dan vektor di database (V).
-
-### $$dist(S,V)=\sum_{i=1}^{128}(S_i-V_i)^2$$
-
-Identitas ditentukan dengan mencari jarak terpendek (minimum distance):
-
-### $$ID=argmin_k(d(S,V_k))$$
-
-Jika jarak d<0.5, wajah dianggap valid.
+Identities are determined by calculating the $L_2$ distance between the input vector ($S$) and the registered database vectors ($V$).
+$$dist(S,V) = \sqrt{\sum_{i=1}^{128}(S_i - V_i)^2}$$
+Identities are confirmed when $dist(S, V_k) < T$, where $T = 0.5$ is the optimized matching threshold.
 
 ---
 
-## Panduan Instalasi
+## Installation Guide
 
-### Prasyarat
+To ensure a smooth setup across all platforms (Windows, Linux, macOS), follow the specific requirements below. The most common error during installation is lack of `cmake` for compiling `dlib`.
 
-**Untuk Development Lokal:**
+### 1. Environment Requirements
 
-- Python 3.11+
-- Node.js 20+ (untuk frontend build)
-- Akun MongoDB Atlas
-- Google Sheets API credentials
+- **Python**: 3.11 or higher.
+- **Node.js**: 20 or higher.
+- **C++ Compiler**:
+  - **Windows**: [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (Select "Desktop development with C++").
+  - **macOS**: `xcode-select --install` and `brew install cmake`.
+  - **Linux**: `sudo apt install build-essential cmake libgtk-3-dev libboost-all-dev`.
 
-**Untuk Docker Deployment:**
-
-- Docker Engine 20.10+
-- Docker Compose 2.0+
-- `.env` file (copy dari `.env.example`)
-- `credentials.json` untuk Google Sheets
-
-### Instalasi Lokal (Development)
-
-1. **Kloning Repositori**
+### 2. Local Setup
 
 ```bash
+# Clone the repository
 git clone https://github.com/Dickybulin26/face_attendance_1kb04.git
 cd face_attendance_1kb04
-```
 
-2. **Konfigurasi Environment**
-
-```bash
-cp .env.example .env
-# Edit .env dengan kredensial Anda
-```
-
-3. **Setup Python Environment**
-
-```bash
+# Create and activate Virtual Environment
 python -m venv .venv
-.venv\Scripts\activate  # Windows
-# source .venv/bin/activate  # Linux/Mac
+# Windows:
+.venv\Scripts\activate
+# Linux/Mac:
+source .venv/bin/activate
+
+# Install Dependencies (Ensures cmake is ready first)
+pip install cmake
 pip install -r requirements.txt
-```
 
-4. **Setup Frontend**
-
-```bash
+# Setup Frontend
 npm install
-npm run build  # Build production assets
+npm run build
 ```
 
-5. **Jalankan Aplikasi**
+### 3. Environment Configuration
+
+Copy `.env.example` to `.env` and fill in your credentials:
+
+- `MONGO_URI`: Your MongoDB Atlas connection string.
+- `GOOGLE_SHEETS_CREDENTIALS`: Path to your `credentials.json`.
+- `GOOGLE_SHEETS_NAME`: Your spreadsheet title.
+
+### 4. Launching the System
 
 ```bash
-# Terminal 1: Flask Backend
+# Start Flask Server
 python app.py
-
-# Terminal 2 (Optional): Vite Dev Server untuk development
-npm run dev
 ```
 
-Akses aplikasi di `http://localhost:5000`
-
-### 🐳 Instalasi via Docker (Recommended untuk Production)
-
-**Quick Start:**
-
-```bash
-# 1. Setup environment
-cp .env.example .env
-# Edit .env dengan kredensial Anda
-
-# 2. Build dan jalankan
-docker-compose build
-docker-compose up -d
-
-# 3. Cek status
-docker-compose ps
-docker-compose logs -f web
-```
-
-**Menggunakan Helper Script:**
-
-```bash
-chmod +x deploy.sh
-./deploy.sh build   # Build image
-./deploy.sh start   # Start aplikasi
-./deploy.sh status  # Cek status
-./deploy.sh logs    # Lihat logs
-```
-
-Akses aplikasi di `http://localhost:5000`
-
-**Dokumentasi lengkap:** Lihat [Docker Deployment Guide](docker_deployment.md)
+Access at `http://localhost:1324`
 
 ---
 
-## Cara Penggunaan
+## Operational Guide
 
-1. Akses aplikasi di `http://localhost:5000` (atau URL deployment Anda).
-2. **Pendaftaran**: Masuk ke menu **Admin > Tambah Wajah**. Ambil foto wajah dengan pencahayaan yang cukup.
-3. **Absensi**: Kembali ke Dashboard, sistem akan otomatis melakukan scanning. Jika wajah dikenali, status "Berhasil Absen" akan muncul.
-4. **Riwayat**: Pantau kehadiran di tabel **Riwayat**. Admin memiliki otoritas untuk menghapus log jika terjadi kesalahan.
-
----
-
-## Catatan Teknis
-
-- **Kualitas Kamera**: Gunakan kamera dengan resolusi minimal 720p untuk hasil terbaik.
-- **Pencahayaan**: Pastikan wajah menghadap sumber cahaya saat pendaftaran.
-- **Keamanan**: Data wajah diproses secara lokal di server sebelum dikirim ke database dalam bentuk log teks (bukan gambar mentah), sehingga menjaga privasi pengguna.
+1. **Administration**: Log in as admin to access the **Registration** menu.
+2. **Registration**: Input the user's name and capture a clear face photo. The system will extract the biometric data locally.
+3. **Scanning**: On the main dashboard, align the face within the guidelines. The system automatically verifies identity.
+4. **Log Management**: View real-time logs in the **History** section. Data is automatically synced to your connected Google Sheet.
 
 ---
 
-Sumber Referensi:
+## Technical Considerations
 
-- Analysis of Face Recognition Algorithm: Dlib and OpenCV (https://www.researchgate.net/publication/343718108_Analysis_of_Face_Recognition_Algorithm_Dlib_and_OpenCV)
-- Histogram of Oriented Gradients (https://www.geeksforgeeks.org/computer-vision/histogram-of-oriented-gradients)
-- C34 | HOG Feature Vector Calculation | Computer Vision | Object Detection | EvODN (https://youtu.be/28xk5i1_7Zc)
+- **Lighting**: For optimal results, ensure the environment is well-lit and avoid backlighting.
+- **Hardware**: A 720p webcam is recommended. Multi-platform support is optimized via Vite assets.
+- **Process**: Facial data is processed into 128-D vectors; only anonymized mathematical embeddings are stored, not raw images.
 
-- C37 | Dalal & Triggs Object Detection | HOG + SVM | Computer Vision | Machine Learning | EvODN (https://youtu.be/sDByl84n5mY)
+---
+
+## References
+
+- Analysis of Face Recognition Algorithm: Dlib and OpenCV ([ResearchGate](https://www.researchgate.net/publication/343718108_Analysis_of_Face_Recognition_Algorithm_Dlib_and_OpenCV))
+- Histogram of Oriented Gradients ([GeeksforGeeks](https://www.geeksforgeeks.org/computer-vision/histogram-of-oriented-gradients))
+- C34 | HOG Feature Vector Calculation | Computer Vision | EvODN ([YouTube](https://youtu.be/28xk5i1_7Zc))
+- C37 | Dalal & Triggs Object Detection | HOG + SVM | EvODN ([YouTube](https://youtu.be/sDByl84n5mY))
