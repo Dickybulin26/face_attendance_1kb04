@@ -85,7 +85,7 @@ To ensure a smooth setup across all platforms (Windows, Linux, macOS), follow th
 - **Python**: 3.11 or higher.
 - **Node.js**: 20 or higher.
 - **C++ Compiler**:
-  - **Windows**: [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (Select "Desktop development with C++").
+  - **Windows**: [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (Select "Desktop development with C++"). or install with winget on powershell (as Administrator) `winget install Kitware.CMake`
   - **macOS**: `xcode-select --install` and `brew install cmake`.
   - **Linux**: `sudo apt install build-essential cmake libgtk-3-dev libboost-all-dev`.
 
@@ -96,26 +96,22 @@ To ensure a smooth setup across all platforms (Windows, Linux, macOS), follow th
 git clone https://github.com/Dickybulin26/face_attendance_1kb04.git
 cd face_attendance_1kb04
 
-# Create and activate Virtual Environment
-python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-# Linux/Mac:
-source .venv/bin/activate
-
-# Install Dependencies (Ensures cmake is ready first)
-pip install cmake
-pip install -r requirements.txt
-
-# Setup Frontend
-npm install
-npm run build
 ```
 
 ### 3. Environment Configuration
 
 Copy `.env.example` to `.env` and fill in your credentials:
+```bash
+cp .env.example .env
+```
 
+Create `credentials.json` file for Google Sheets API and place it in the root directory of the project.
+
+```bash
+touch credentials.json
+```
+
+Fill in the following variables in `.env`:
 - `MONGO_URI`: Your MongoDB Atlas connection string.
 - `GOOGLE_SHEETS_CREDENTIALS`: Path to your `credentials.json`.
 - `GOOGLE_SHEETS_NAME`: Your spreadsheet title.
@@ -123,11 +119,41 @@ Copy `.env.example` to `.env` and fill in your credentials:
 ### 4. Launching the System
 
 ```bash
-# Start Flask Server
-python app.py
+# Run app
+./run_app.sh
+```
+
+Access at `http://localhost:5000`
+
+---
+
+## Docker Setup
+
+```bash
+# Build the image
+docker-compose build
+
+# Run the container
+docker-compose up -d
 ```
 
 Access at `http://localhost:1324`
+
+```bash
+# To stop the container
+docker-compose down
+```
+---
+
+## Docker Pull From DockerHub Repository
+
+It will pull the image from DockerHub and run it.
+DockerHub repository: [dickyasqaelani/absensipro](https://hub.docker.com/r/dickyasqaelani/absensipro)
+
+```bash
+# Run the container
+docker run -d -p 1324:1324 --name absensipro dickyasqaelani/absensipro:v1
+```
 
 ---
 

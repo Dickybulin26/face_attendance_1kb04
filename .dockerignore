@@ -53,3 +53,7 @@ credentials.json
 # Test
 tests/
 .pytest_cache/
+test_results.txt
+
+# Face Folder
+known_faces/*

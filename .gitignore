@@ -8,3 +8,7 @@ credentials.json
 __pycache__/face_engine.cpython-313.pyc
 known_faces/*
 node_modules
+absensi.db
+tests
+static
+test_results.txt

@@ -4,7 +4,6 @@ opencv-python
 numpy
 dnspython
 Pillow
-face-recognition
 pytest
 pytest-mock
 gspread
@@ -12,4 +11,6 @@ oauth2client
 python-dotenv
 gunicorn
 requests
-
+setuptools
+cmake
+face-recognition
