@@ -9,19 +9,19 @@ class FaceEngine:
         self.known_faces_dir = known_faces_dir
         self.known_encodings = []
         self.known_names = []
-        # Memanggil fungsi load saat pertama kali dijalankan
+        # Load known faces on initialization
         self.load_known_faces()
 
     def load_known_faces(self):
-        """Memuat ulang database wajah dari folder ke memori"""
+        """Reload face database from folder to memory"""
         self.known_encodings = []
         self.known_names = []
         
-        # Buat folder jika belum ada
+        # Create folder if it doesn't exist
         if not os.path.exists(self.known_faces_dir):
             os.makedirs(self.known_faces_dir)
             
-        print("Sedang memuat ulang database wajah...")
+        print("Loading face database...")
         
         for filename in os.listdir(self.known_faces_dir):
             if filename.endswith((".jpg", ".png", ".jpeg")):
@@ -33,12 +33,12 @@ class FaceEngine:
                         self.known_encodings.append(encoding[0])
                         self.known_names.append(os.path.splitext(filename)[0])
                 except Exception as e:
-                    print(f"Gagal memuat {filename}: {e}")
+                    print(f"Failed to load {filename}: {e}")
         
-        print(f"Database siap! Total user: {len(self.known_names)}")
+        print(f"Database ready! Total users: {len(self.known_names)}")
 
     def process_base64_image(self, base64_string):
-        """Mengubah string dari webcam menjadi gambar OpenCV"""
+        """Convert base64 string from webcam to OpenCV image"""
         if "," in base64_string:
             base64_string = base64_string.split(",")[1]
         
@@ -46,22 +46,22 @@ class FaceEngine:
         nparr = np.frombuffer(img_data, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         
-        # Optimasi Gambar: Cerahkan sedikit agar deteksi lebih mudah
+        # Image optimization: Brighten slightly for easier detection
         img = cv2.convertScaleAbs(img, alpha=1.1, beta=10)
         
         return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     def recognize_face(self, rgb_img):
-        """Proses Absensi (Scan)"""
-        # Upsample 1x cukup untuk scanning cepat
+        """Attendance Process (Scan)"""
+        # Upsample 1x is sufficient for fast scanning
         face_locations = face_recognition.face_locations(rgb_img)
         face_encodings = face_recognition.face_encodings(rgb_img, face_locations)
 
         if not face_encodings:
-            return "error", "Wajah tidak terdeteksi", None
+            return "error", "Face not detected", None
 
         for face_encoding in face_encodings:
-            # Tolerance 0.5 agar akurat
+            # Tolerance 0.5 for accuracy
             matches = face_recognition.compare_faces(self.known_encodings, face_encoding, tolerance=0.5)
             face_distances = face_recognition.face_distance(self.known_encodings, face_encoding)
             
@@ -69,47 +69,47 @@ class FaceEngine:
                 best_match_index = np.argmin(face_distances)
                 if matches[best_match_index]:
                     nama = self.known_names[best_match_index]
-                    return "success", "Wajah dikenali", nama
+                    return "success", "Face recognized", nama
 
-        return "error", "Wajah tidak dikenal", None
+        return "error", "Face not recognized", None
 
     def register_face(self, nama, base64_image):
-        """Proses Pendaftaran Wajah Baru (Lebih Teliti)"""
+        """New Face Registration Process (More Precise)"""
         try:
             img_rgb = self.process_base64_image(base64_image)
             
-            # --- FITUR ANTI GAGAL DETEKSI ---
-            # number_of_times_to_upsample=1 adalah balance antara speed & akurasi
+            # --- ANTI-FAILURE DETECTION FEATURE ---
+            # number_of_times_to_upsample=1 is balance between speed & accuracy
             face_locations = face_recognition.face_locations(img_rgb, number_of_times_to_upsample=1)
             
             if not face_locations:
-                # Coba sekali lagi dengan kontras tinggi jika gagal
+                # Try again with high contrast if failed
                 img_enhanced = cv2.convertScaleAbs(img_rgb, alpha=1.5, beta=20)
                 face_locations = face_recognition.face_locations(img_enhanced, number_of_times_to_upsample=1)
                 
                 if not face_locations:
-                    return False, "Wajah tidak ditemukan. Coba mendekat ke kamera."
+                    return False, "Face not found. Try moving closer to the camera."
 
-            # --- VALIDASI: HANYA BOLEH 1 WAJAH ---
+            # --- VALIDATION: ONLY 1 FACE ALLOWED ---
             if len(face_locations) > 1:
-                return False, "Hanya diperbolehkan 1 wajah dalam 1 gambar!"
+                return False, "Only 1 face is allowed per image!"
 
-            # Ambil encoding
+            # Get encoding
             face_encodings = face_recognition.face_encodings(img_rgb, face_locations)
             
             if not face_encodings:
-                return False, "Wajah terdeteksi tapi buram. Pastikan cahaya cukup."
+                return False, "Face detected but blurry. Ensure sufficient lighting."
 
-            # Simpan File
+            # Save file
             img_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
             file_path = os.path.join(self.known_faces_dir, f"{nama}.jpg")
             cv2.imwrite(file_path, img_bgr)
             
-            # --- OPTIMASI: APPEND KE MEMORY TANPA FULL RELOAD ---
+            # --- OPTIMIZATION: APPEND TO MEMORY WITHOUT FULL RELOAD ---
             self.known_encodings.append(face_encodings[0])
             self.known_names.append(nama)
             
-            return True, f"Berhasil! Wajah {nama} disimpan."
+            return True, f"Success! Face {nama} saved."
 
         except Exception as e:
             print(f"Error Register: {str(e)}")

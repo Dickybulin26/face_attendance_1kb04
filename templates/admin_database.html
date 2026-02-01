@@ -1,0 +1,208 @@
+{% extends "base.html" %} {% block title %}Database User - AbsensiPro{% endblock
+%} {% block content %}
+<main
+  class="max-w-7xl mx-auto p-6 md:p-10 flex flex-col min-h-screen lg:h-[calc(100vh-80px)] lg:overflow-hidden page-animate"
+>
+  <div
+    class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 shrink-0"
+  >
+    <div>
+      <div class="flex items-center gap-3 mb-1">
+        <div class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
+        <h2 class="text-3xl font-black tracking-tighter text-white uppercase">
+          Core <span class="text-blue-500">Database</span>
+        </h2>
+      </div>
+      <p
+        class="text-[10px] text-slate-500 font-bold tracking-[0.3em] uppercase"
+      >
+        Authorized Personnel Only
+      </p>
+    </div>
+  </div>
+
+  <div class="mb-6 shrink-0 search-container">
+    <input
+      type="text"
+      id="userSearch"
+      placeholder="Search by name or unique ID..."
+      class="search-input w-full rounded-2xl py-4 pl-4 pr-6 text-sm text-white focus:outline-none"
+    />
+  </div>
+
+  <div
+    class="blue-glass flex flex-col overflow-hidden border border-white/10 shadow-2xl relative h-[600px] lg:h-auto lg:flex-1"
+  >
+    <div
+      class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[60px] pointer-events-none"
+    ></div>
+
+    <div
+      class="hidden md:grid grid-cols-12 gap-4 px-10 py-6 border-b border-white/5 bg-white/[0.03] text-[10px] font-black uppercase tracking-[0.2em] text-slate-400"
+    >
+      <div class="col-span-2">Biometric</div>
+      <div class="col-span-5">Identity Profile</div>
+      <div class="col-span-2 text-center">Status</div>
+      <div class="col-span-3 text-right">System Action</div>
+    </div>
+
+    <div id="scrollArea" class="flex-1 overflow-y-auto tech-scroll p-6">
+      <div id="userList" class="space-y-3">
+        {% if users %} {% for user in users %}
+        <div
+          id="row-{{ user._id }}"
+          data-search="{{ user.nama|lower }} {{ (user._id|string)[-8:]|lower }}"
+          class="user-row flex flex-col md:grid md:grid-cols-12 gap-4 items-center px-6 py-4 rounded-2xl border border-white/5 bg-slate-900/20 backdrop-blur-sm group"
+        >
+          <!-- ... row content ... -->
+          <div
+            class="w-full md:col-span-2 flex justify-center md:justify-start"
+          >
+            <div
+              class="relative w-20 h-20 md:w-14 md:h-14 cursor-pointer"
+              onclick="showImageModal('{{ user.image_preview }}', '{{ user.nama }}')"
+            >
+              <div
+                class="absolute inset-0 bg-blue-500/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity"
+              ></div>
+              <div
+                class="relative w-full h-full rounded-xl overflow-hidden border border-white/10 bg-slate-800"
+              >
+                {% if user.image_preview %}
+                <img
+                  src="{{ user.image_preview }}"
+                  alt="{{ user.nama }} Biometric"
+                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+                {% else %}
+                <div
+                  class="w-full h-full flex items-center justify-center text-slate-700"
+                >
+                  <i data-lucide="fingerprint" class="w-6 h-6"></i>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full md:col-span-5 text-center md:text-left">
+            <div
+              class="flex flex-col md:block items-center md:items-start gap-2"
+            >
+              <span
+                id="name-{{ user._id }}"
+                class="text-lg md:text-base font-bold text-white outline-none focus:text-blue-400 focus:bg-blue-500/10 px-1 rounded-lg transition-all"
+                contenteditable="false"
+                spellcheck="false"
+                >{{ user.nama }}</span
+              >
+            </div>
+            <div
+              class="flex items-center justify-center md:justify-start gap-2 mt-2 md:mt-1"
+            >
+              <span
+                class="text-[9px] text-blue-500/60 font-mono tracking-tighter uppercase font-bold"
+                >Encrypted ID:</span
+              >
+              <span class="text-[9px] text-slate-500 font-mono tracking-widest"
+                >{{ (user._id|string)|upper }}</span
+              >
+            </div>
+          </div>
+
+          <div class="w-full md:col-span-2 flex justify-center">
+            <div
+              class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/5 border border-emerald-500/20"
+            >
+              <div
+                class="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_8px_#10b981]"
+              ></div>
+              <span
+                class="text-emerald-500 text-[8px] font-black uppercase tracking-widest"
+                >Active</span
+              >
+            </div>
+          </div>
+
+          <div
+            class="w-full md:col-span-3 flex justify-center md:justify-end gap-3 pt-2 md:pt-0 border-t border-white/5 md:border-t-0 mt-2 md:mt-0"
+          >
+            <button
+              onclick="toggleEdit('{{ user._id }}')"
+              id="btn-edit-{{ user._id }}"
+              class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 border border-white/5 hover:border-blue-500/50 hover:text-blue-400 hover:bg-blue-500/5 transition-all"
+            >
+              <i
+                id="icon-edit-{{ user._id }}"
+                data-lucide="edit"
+                class="w-4 h-4"
+              ></i>
+              <i
+                id="icon-save-{{ user._id }}"
+                data-lucide="save"
+                class="w-4 h-4 hidden text-blue-400"
+              ></i>
+            </button>
+
+            <button
+              onclick="deleteUser('{{ user._id }}')"
+              class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 border border-white/5 hover:border-red-500/50 hover:text-red-500 hover:bg-red-500/5 transition-all"
+            >
+              <i data-lucide="trash" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+        {% endfor %} {% else %}
+        <div class="flex flex-col items-center justify-center py-20">
+          <div class="empty-state">
+            <i data-lucide="search-x" class="w-16 h-16 text-slate-800 mb-4"></i>
+          </div>
+          <h3
+            class="text-slate-400 font-bold uppercase tracking-widest text-xs"
+          >
+            Database is Empty
+          </h3>
+          <p class="text-slate-600 text-[10px] mt-2 italic uppercase">
+            No registered identities found
+          </p>
+        </div>
+        {% endif %}
+
+        <div
+          id="noResult"
+          class="hidden flex flex-col items-center justify-center py-20"
+        >
+          <div class="empty-state">
+            <i
+              data-lucide="alert-octagon"
+              class="w-16 h-16 text-slate-800 mb-4"
+            ></i>
+          </div>
+          <h3
+            class="text-slate-400 font-bold uppercase tracking-widest text-xs"
+          >
+            No Matches Found in Database
+          </h3>
+          <p class="text-slate-600 text-[10px] mt-2">
+            Try checking the spelling or ID sequence
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="px-10 py-4 bg-black/20 border-t border-white/5 flex justify-between items-center"
+    >
+      <p class="text-[10px] text-slate-600 font-bold tracking-widest uppercase">
+        Total Nodes: {{ users|length }}
+      </p>
+      <button
+        onclick="deleteAllUsers()"
+        class="ml-4 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest text-[8px]"
+      >
+        Clear All Data
+      </button>
+    </div>
+  </div>
+</main>
+{% endblock %}

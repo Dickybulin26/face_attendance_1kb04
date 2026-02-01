@@ -70,8 +70,8 @@ function initLoginPage() {
       if (result.status === "success") {
         Swal.fire({
           icon: "success",
-          title: "Login Berhasil!",
-          text: "Mengalihkan ke dashboard...",
+          title: "Login Successful!",
+          text: "Redirecting to dashboard...",
           showConfirmButton: false,
           timer: 1500,
           background: "#0f172a",
@@ -82,8 +82,8 @@ function initLoginPage() {
       } else {
         Swal.fire({
           icon: "error",
-          title: "Login Gagal",
-          text: result.message || "Username/Password salah",
+          title: "Login Failed",
+          text: result.message || "Invalid username or password",
           background: "#0f172a",
           color: "#fff",
           confirmButtonColor: "#3b82f6",
@@ -93,7 +93,7 @@ function initLoginPage() {
       Swal.fire({
         icon: "error",
         title: "System Error",
-        text: "Gagal terhubung ke server",
+        text: "Failed to connect to server",
         background: "#0f172a",
         color: "#fff",
       });
@@ -174,8 +174,8 @@ function initScannerPage() {
       console.error("Camera detection error:", e);
       Swal.fire({
         icon: "error",
-        title: "Kamera Tidak Terdeteksi",
-        text: "Gagal mengakses feed kamera. Pastikan izin kamera aktif dan tidak sedang digunakan aplikasi lain.",
+        title: "Camera Not Detected",
+        text: "Failed to access camera feed. Make sure camera permission is enabled and not being used by another application.",
         background: "#0f172a",
         color: "#fff",
         confirmButtonColor: "#3b82f6",
@@ -199,7 +199,7 @@ function initScannerPage() {
     const base64 = canvasEl.toDataURL("image/jpeg", 0.7);
 
     try {
-      const res = await fetch("/process_image", {
+      const res = await fetch("/api/process_image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: base64 }),
@@ -208,20 +208,20 @@ function initScannerPage() {
 
       if (data.status === "success") {
         updateStatus(data.nama.toUpperCase(), "bg-emerald-500");
-        speak("Absensi berhasil. Terima kasih " + data.nama);
+        speak("Attendance successful. Thank you " + data.nama);
         loadLogs();
         setTimeout(() => {
           isProcessing = false;
         }, 3000);
       } else if (data.status === "already_present") {
         updateStatus("DONE", "bg-green-500");
-        speak("Anda sudah absen hari ini.");
+        speak("You have already attended today.");
         setTimeout(() => {
           isProcessing = false;
         }, 2000);
       } else {
         updateStatus("UNKNOWN", "bg-red-500");
-        speak("Wajah tidak dikenali.");
+        speak("Face not recognized.");
         setTimeout(() => {
           isProcessing = false;
         }, 1200);
@@ -320,8 +320,8 @@ function initRegistrationPage() {
       console.error("Kamera error", e);
       Swal.fire({
         icon: "error",
-        title: "Akses Kamera Gagal",
-        text: "Pastikan izin kamera aktif dan tidak sedang digunakan aplikasi lain.",
+        title: "Camera Access Failed",
+        text: "Make sure camera permission is enabled and not being used by another application.",
         background: "#0f172a",
         color: "#fff",
         confirmButtonColor: "#3b82f6",
@@ -344,8 +344,8 @@ function initRegistrationPage() {
     if (file.size > maxSizeBytes) {
       Swal.fire({
         icon: "error",
-        title: "File Terlalu Besar",
-        text: `Ukuran file maksimal adalah 5MB. File Anda: ${(file.size / (1024 * 1024)).toFixed(2)}MB`,
+        title: "File Too Large",
+        text: `Maximum file size is 5MB. Your file: ${(file.size / (1024 * 1024)).toFixed(2)}MB`,
         background: "#0f172a",
         color: "#fff",
         confirmButtonColor: "#3b82f6",
@@ -356,8 +356,8 @@ function initRegistrationPage() {
     if (!file.type.startsWith("image/")) {
       Swal.fire({
         icon: "error",
-        title: "Format Salah",
-        text: "Hanya file gambar yang diperbolehkan.",
+        title: "Invalid Format",
+        text: "Only image files are allowed.",
         background: "#0f172a",
         color: "#fff",
         confirmButtonColor: "#3b82f6",
@@ -434,8 +434,8 @@ function initRegistrationPage() {
     if (!nama) {
       return Swal.fire({
         icon: "warning",
-        title: "Validasi Gagal",
-        text: "Silahkan isi nama lengkap terlebih dahulu!",
+        title: "Validation Failed",
+        text: "Please enter your full name first!",
         background: "#0f172a",
         color: "#fff",
         confirmButtonColor: "#3b82f6",
@@ -461,8 +461,8 @@ function initRegistrationPage() {
     if (!imgBase64 || imgBase64.includes("window.location")) {
       return Swal.fire({
         icon: "warning",
-        title: "Foto Belum Ada",
-        text: "Silahkan ambil foto atau upload gambar dulu!",
+        title: "No Photo",
+        text: "Please capture a photo or upload an image first!",
         background: "#0f172a",
         color: "#fff",
         confirmButtonColor: "#3b82f6",
@@ -474,12 +474,12 @@ function initRegistrationPage() {
     btnContent.innerHTML = `
             <div class="loader-container">
                 <div class="loader-spinner"></div>
-                <span class="tracking-[0.2em]">MEMPROSES...</span>
+                <span class="tracking-[0.2em]">PROCESSING...</span>
             </div>
         `;
 
     try {
-      const r = await fetch("/register_face", {
+      const r = await fetch("/api/register_face", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nama: nama, image: imgBase64 }),
@@ -489,20 +489,20 @@ function initRegistrationPage() {
       if (d.status === "success") {
         Swal.fire({
           icon: "success",
-          title: "Berhasil!",
-          text: "Data wajah berhasil didaftarkan.",
+          title: "Success!",
+          text: "Face data successfully registered.",
           showConfirmButton: false,
           timer: 1500,
           background: "#0f172a",
           color: "#fff",
         }).then(() => {
-          window.location.href = "/daftar_user";
+          window.location.href = "/admin/database";
         });
       } else {
         Swal.fire({
           icon: "error",
-          title: "Gagal",
-          text: d.message || "Terjadi kesalahan saat mendaftarkan wajah.",
+          title: "Failed",
+          text: d.message || "An error occurred while registering face.",
           background: "#0f172a",
           color: "#fff",
           confirmButtonColor: "#3b82f6",
@@ -513,7 +513,7 @@ function initRegistrationPage() {
       Swal.fire({
         icon: "error",
         title: "System Error",
-        text: "Gagal terhubung ke server.",
+        text: "Failed to connect to server.",
         background: "#0f172a",
         color: "#fff",
       });
@@ -526,7 +526,7 @@ function initRegistrationPage() {
     const btnContent = document.getElementById("btnContent");
     btn.disabled = false;
     btnContent.innerHTML = `
-            Selesaikan Pendaftaran
+            Complete Registration
             <i data-lucide="arrow-right" class="w-4 h-4"></i>
         `;
     if (typeof lucide !== "undefined") lucide.createIcons();
@@ -552,19 +552,19 @@ function initHistoryPage() {
   // Expose functions to window for onclick handlers
   window.deleteLog = function (logId) {
     Swal.fire({
-      title: "Hapus Log?",
-      text: "Data ini akan dihapus dari riwayat pendaftaran.",
+      title: "Delete Log?",
+      text: "This data will be deleted from the attendance history.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#334155",
-      confirmButtonText: "Ya, Hapus!",
-      cancelButtonText: "Batal",
+      confirmButtonText: "Yes, Delete!",
+      cancelButtonText: "Cancel",
       background: "#0f172a",
       color: "#fff",
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`/delete_log/${logId}`, { method: "POST" })
+        fetch(`/api/admin/delete_log/${logId}`, { method: "POST" })
           .then((r) => r.json())
           .then((d) => {
             if (d.status === "success") {
@@ -587,18 +587,18 @@ function initHistoryPage() {
   window.deleteAllLogs = function () {
     Swal.fire({
       title: "Clear All Logs?",
-      text: "PERINGATAN: Semua data riwayat akan dihapus secara permanen!",
+      text: "WARNING: All attendance history data will be permanently deleted!",
       icon: "error",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#334155",
-      confirmButtonText: "Ya, Bersihkan Semua!",
-      cancelButtonText: "Batal",
+      confirmButtonText: "Yes, Clear All!",
+      cancelButtonText: "Cancel",
       background: "#0f172a",
       color: "#fff",
     }).then((result) => {
       if (result.isConfirmed) {
-        window.location.href = "/clear_logs";
+        window.location.href = "/api/admin/clear_logs";
       }
     });
   };
@@ -658,10 +658,10 @@ function initHistoryPage() {
     window.calendarInstance = new window.FullCalendar.Calendar(calendarEl, {
       plugins: [window.dayGridPlugin, window.interactionPlugin],
       initialView: "dayGridMonth",
-      locale: "id",
+      locale: "en",
       height: "100%", // Mengisi parent container
       headerToolbar: { left: "prev,next", center: "title", right: "today" }, // Layout Toolbar Modern
-      events: "/api/calendar_events",
+      events: "/api/admin/calendar_events",
 
       // Handle date click to filter table
       dateClick: function (info) {
@@ -678,9 +678,7 @@ function initHistoryPage() {
           filterTable(searchInput ? searchInput.value.toLowerCase() : "", null);
 
           // Show notification
-          showDateFilterNotification(
-            "Filter tanggal dihapus - Menampilkan semua data",
-          );
+          showDateFilterNotification("Date filter removed - Showing all data");
         } else {
           currentDateFilter = clickedDate;
 
@@ -701,7 +699,7 @@ function initHistoryPage() {
             month: "long",
             year: "numeric",
           });
-          showDateFilterNotification(`Filter aktif: ${formattedDate}`);
+          showDateFilterNotification(`Filter active: ${formattedDate}`);
         }
       },
 
@@ -711,7 +709,7 @@ function initHistoryPage() {
         const isAdm = p.is_admin;
         const cssClass = isAdm ? "pill-admin" : "pill-user";
         const iconName = isAdm ? "users" : "check-circle";
-        const text = isAdm ? `${p.count}` : "Hadir";
+        const text = isAdm ? `${p.count}` : "Present";
 
         return {
           html: `
@@ -788,7 +786,7 @@ function initHistoryPage() {
       const contentEl = document.getElementById("tooltip-time");
 
       if (nameEl)
-        nameEl.innerText = props.is_admin ? "Rekap Harian" : props.nama;
+        nameEl.innerText = props.is_admin ? "Daily Recap" : props.nama;
 
       if (contentEl) {
         if (props.is_admin) {
@@ -886,7 +884,7 @@ function initUserDatabasePage() {
   };
 
   window.saveEdit = function (id, newName) {
-    fetch(`/edit_user/${id}`, {
+    fetch(`/api/admin/edit_user/${id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nama: newName }),
@@ -903,66 +901,68 @@ function initUserDatabasePage() {
 
   window.deleteUser = function (id) {
     Swal.fire({
-      title: "Hapus Data Biometrik?",
-      text: "PERINGATAN: Data wajah akan dihapus secara permanen dan tidak dapat dikembalikan!",
+      title: "Delete Biometric Data?",
+      text: "WARNING: Face data will be permanently deleted and cannot be recovered!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#334155",
-      confirmButtonText: "Ya, Hapus!",
-      cancelButtonText: "Batal",
+      confirmButtonText: "Yes, Delete!",
+      cancelButtonText: "Cancel",
       background: "#0f172a",
       color: "#fff",
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`/delete_user/${id}`, { method: "POST" }).then((res) => {
-          if (res.ok) {
-            Swal.fire({
-              icon: "success",
-              title: "Berhasil Dihapus!",
-              text: "Data biometrik telah dihapus dari sistem.",
-              showConfirmButton: false,
-              timer: 1500,
-              background: "#0f172a",
-              color: "#fff",
-            });
-            const row = document.getElementById(`row-${id}`);
-            row.style.transform = "translateX(50px)";
-            row.style.opacity = "0";
-            setTimeout(() => row.remove(), 300);
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "Gagal Menghapus",
-              text: "Terjadi kesalahan saat menghapus data.",
-              background: "#0f172a",
-              color: "#fff",
-              confirmButtonColor: "#3b82f6",
-            });
-          }
-        });
+        fetch(`/api/admin/delete_user/${id}`, { method: "POST" }).then(
+          (res) => {
+            if (res.ok) {
+              Swal.fire({
+                icon: "success",
+                title: "Successfully Deleted!",
+                text: "Biometric data has been removed from the system.",
+                showConfirmButton: false,
+                timer: 1500,
+                background: "#0f172a",
+                color: "#fff",
+              });
+              const row = document.getElementById(`row-${id}`);
+              row.style.transform = "translateX(50px)";
+              row.style.opacity = "0";
+              setTimeout(() => row.remove(), 300);
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Delete Failed",
+                text: "An error occurred while deleting data.",
+                background: "#0f172a",
+                color: "#fff",
+                confirmButtonColor: "#3b82f6",
+              });
+            }
+          },
+        );
       }
     });
   };
 
   window.deleteAllUsers = function () {
     Swal.fire({
-      title: "Hapus Semua Data Biometrik?",
-      text: "PERINGATAN KRITIS: Semua data wajah akan dihapus secara permanen dan tidak dapat dikembalikan!",
+      title: "Delete All Biometric Data?",
+      text: "CRITICAL WARNING: All face data will be permanently deleted and cannot be recovered!",
       icon: "error",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#334155",
-      confirmButtonText: "Ya, Hapus Semua!",
-      cancelButtonText: "Batal",
+      confirmButtonText: "Yes, Delete All!",
+      cancelButtonText: "Cancel",
       background: "#0f172a",
       color: "#fff",
     }).then((result) => {
       if (result.isConfirmed) {
         // Show loading
         Swal.fire({
-          title: "Menghapus...",
-          text: "Mohon tunggu, sedang menghapus semua data biometrik.",
+          title: "Deleting...",
+          text: "Please wait, deleting all biometric data.",
           allowOutsideClick: false,
           allowEscapeKey: false,
           showConfirmButton: false,
@@ -973,14 +973,14 @@ function initUserDatabasePage() {
           },
         });
 
-        fetch("/delete_all_users", { method: "POST" })
+        fetch("/api/admin/delete_all_users", { method: "POST" })
           .then((res) => res.json())
           .then((data) => {
             if (data.status === "success") {
               Swal.fire({
                 icon: "success",
-                title: "Berhasil!",
-                text: `${data.deleted_count} data biometrik telah dihapus.`,
+                title: "Success!",
+                text: `${data.deleted_count} biometric records have been deleted.`,
                 showConfirmButton: false,
                 timer: 2000,
                 background: "#0f172a",
@@ -991,8 +991,8 @@ function initUserDatabasePage() {
             } else {
               Swal.fire({
                 icon: "error",
-                title: "Gagal",
-                text: data.message || "Terjadi kesalahan saat menghapus data.",
+                title: "Failed",
+                text: data.message || "An error occurred while deleting data.",
                 background: "#0f172a",
                 color: "#fff",
                 confirmButtonColor: "#3b82f6",
@@ -1003,7 +1003,7 @@ function initUserDatabasePage() {
             Swal.fire({
               icon: "error",
               title: "System Error",
-              text: "Gagal terhubung ke server.",
+              text: "Failed to connect to server.",
               background: "#0f172a",
               color: "#fff",
               confirmButtonColor: "#3b82f6",
@@ -1045,19 +1045,19 @@ function initUserDatabasePage() {
 window.confirmLogout = function (e) {
   if (e) e.preventDefault();
   Swal.fire({
-    title: "Keluar dari Sistem?",
-    text: "Anda akan mengakhiri sesi akses saat ini.",
+    title: "Sign Out?",
+    text: "You are about to end your current session.",
     icon: "question",
     showCancelButton: true,
     confirmButtonColor: "#ef4444",
     cancelButtonColor: "#334155",
-    confirmButtonText: "Ya, Keluar",
-    cancelButtonText: "Batal",
+    confirmButtonText: "Yes, Logout",
+    cancelButtonText: "Cancel",
     background: "#0f172a",
     color: "#fff",
   }).then((result) => {
     if (result.isConfirmed) {
-      window.location.href = "/logout";
+      window.location.href = "/admin/logout";
     }
   });
 };

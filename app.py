@@ -9,6 +9,7 @@ from bson.objectid import ObjectId
 from face_engine import FaceEngine
 from dotenv import load_dotenv
 from utils import compress_base64_image
+from functools import wraps
 load_dotenv()
 
 app = Flask(__name__)
@@ -17,7 +18,7 @@ app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # Limit 50MB payload
 
 
 # ============================================
-# 1. FUNGSI GOOGLE SHEETS
+# 1. GOOGLE SHEETS FUNCTIONS
 # ============================================
 
 
@@ -66,7 +67,7 @@ def _log_to_sheets_thread(user_name, user_id):
 
 
 def log_to_sheets(user_name, user_id):
-    # Run in background string to avoid blocking response
+    # Run in background thread to avoid blocking response
     thread = threading.Thread(
         target=_log_to_sheets_thread, args=(user_name, user_id))
     thread.daemon = True
@@ -74,18 +75,18 @@ def log_to_sheets(user_name, user_id):
 
 
 # ============================================
-# 2. KONEKSI DATABASE & ENGINE
+# 2. DATABASE & ENGINE CONNECTION
 # ============================================
 MONGO_URI = os.getenv("MONGO_URI")
 
 try:
     client = MongoClient(MONGO_URI)
     db = client['db_absensi']
-    collection = db['log_absensi']        # Riwayat Absen
-    users_collection = db['daftar_wajah']  # Data Wajah
-    print("Berhasil Terhubung ke MongoDB Atlas")
+    collection = db['log_absensi']        # Attendance History
+    users_collection = db['daftar_wajah']  # Face Data
+    print("Successfully connected to MongoDB Atlas")
 except Exception as e:
-    print(f"Gagal Database: {e}")
+    print(f"Database connection failed: {e}")
 
 if not os.path.exists('known_faces'):
     os.makedirs('known_faces')
@@ -94,15 +95,24 @@ face_engine = FaceEngine(known_faces_dir='known_faces')
 # ============================================
 # 3. AUTHENTICATION & HELPERS
 # ============================================
-USERS = {"admin": "123", "user": "123"}
+USERS = {"admin": "123"}
 
 
-def is_logged_in():
-    return 'user' in session
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('role') != 'admin':
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Redirect already logged-in admins to their dashboard
+    if session.get('role') == 'admin':
+        return redirect(url_for('admin_history'))
+    
     if request.method == 'POST':
         # Handle AJAX/JSON Login
         if request.is_json:
@@ -111,79 +121,81 @@ def login():
             pw = data.get('password')
             if user in USERS and USERS[user] == pw:
                 session['user'] = user
-                session['role'] = 'admin' if user == 'admin' else 'user'
+                session['role'] = 'admin'
                 session['logged_in'] = True
-                return jsonify({"status": "success", "redirect": url_for('index')})
-            return jsonify({"status": "error", "message": "Username atau Password salah!"})
+                return jsonify({"status": "success", "redirect": url_for('admin_history')})
+            return jsonify({"status": "error", "message": "Invalid username or password!"})
 
         # Handle Standard Form Login
         user = request.form['username']
         pw = request.form['password']
         if user in USERS and USERS[user] == pw:
             session['user'] = user
-            session['role'] = 'admin' if user == 'admin' else 'user'
+            session['role'] = 'admin'
             session['logged_in'] = True
-            return redirect(url_for('index'))
-        return render_template('login.html', error="Username atau Password salah!")
+            return redirect(url_for('admin_history'))
+        return render_template('login.html', error="Invalid username or password!")
     return render_template('login.html')
 
 
-@app.route('/logout')
+@app.route('/admin/logout')
+@admin_required
 def logout():
     session.clear()
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))
 
 # ============================================
-# 4. PAGE ROUTES
+# 4. PUBLIC PAGE ROUTES
 # ============================================
 
 
 @app.route('/')
 def index():
-    if not is_logged_in():
-        return redirect(url_for('login'))
+    """Public scanning page - end users only"""
+    # Redirect admins to their dashboard
+    if session.get('role') == 'admin':
+        return redirect(url_for('admin_history'))
     return render_template('index.html', role=session.get('role'))
 
 
-@app.route('/riwayat')
-def riwayat():
-    if not is_logged_in():
-        return redirect(url_for('login'))
-    role = session.get('role')
-    user_sekarang = session.get('user')
-    if role == 'admin':
-        logs = list(collection.find().sort("created_at", -1))
-    else:
-        logs = list(collection.find(
-            {"nama": user_sekarang}).sort("created_at", -1))
+@app.route('/register')
+def register_page():
+    """Public face registration page - end users only"""
+    # Redirect admins to their dashboard
+    if session.get('role') == 'admin':
+        return redirect(url_for('admin_history'))
+    return render_template('register.html', role=session.get('role'))
+
+# ============================================
+# 5. ADMIN PAGE ROUTES
+# ============================================
+
+
+@app.route('/admin/history')
+@admin_required
+def admin_history():
+    """Admin-only attendance history page"""
+    logs = list(collection.find().sort("created_at", -1))
     for log in logs:
         log['id'] = str(log['_id'])
-    return render_template('riwayat.html', logs=logs, role=role)
+    return render_template('admin_history.html', logs=logs, role=session.get('role'))
 
 
-@app.route('/daftar_user')
-def daftar_user():
-    if session.get('role') != 'admin':
-        return redirect(url_for('index'))
+@app.route('/admin/database')
+@admin_required
+def admin_database():
+    """Admin-only user database management page"""
     users = list(users_collection.find().sort("nama", 1))
-    return render_template('daftar_user.html', users=users, role=session.get('role'))
-
-
-@app.route('/tambah_wajah')
-def tambah_wajah_view():
-    if session.get('role') != 'admin':
-        return redirect(url_for('index'))
-    return render_template('tambah_wajah.html', role=session.get('role'))
+    return render_template('admin_database.html', users=users, role=session.get('role'))
 
 # ============================================
-# 5. API MANAGEMENT (EDIT/DELETE)
+# 6. ADMIN API MANAGEMENT (EDIT/DELETE)
 # ============================================
 
 
-@app.route('/edit_user/<id>', methods=['POST'])
+@app.route('/api/admin/edit_user/<id>', methods=['POST'])
+@admin_required
 def edit_user(id):
-    if session.get('role') != 'admin':
-        return jsonify({"status": "error"})
     new_nama = request.json.get('nama')
     try:
         users_collection.update_one({"_id": ObjectId(id)}, {
@@ -194,10 +206,9 @@ def edit_user(id):
         return jsonify({"status": "error"})
 
 
-@app.route('/delete_user/<id>', methods=['POST'])
+@app.route('/api/admin/delete_user/<id>', methods=['POST'])
+@admin_required
 def delete_user(id):
-    if session.get('role') != 'admin':
-        return jsonify({"status": "error"})
     try:
         users_collection.delete_one({"_id": ObjectId(id)})
         return jsonify({"status": "success"})
@@ -206,10 +217,9 @@ def delete_user(id):
         return jsonify({"status": "error"})
 
 
-@app.route('/delete_all_users', methods=['POST'])
+@app.route('/api/admin/delete_all_users', methods=['POST'])
+@admin_required
 def delete_all_users():
-    if session.get('role') != 'admin':
-        return jsonify({"status": "error", "message": "Unauthorized"}), 403
     try:
         # Get count before deletion
         deleted_count = users_collection.count_documents({})
@@ -240,31 +250,34 @@ def delete_all_users():
         }), 500
 
 
-@app.route('/delete_log/<id>', methods=['POST'])
+@app.route('/api/admin/delete_log/<id>', methods=['POST'])
+@admin_required
 def delete_log(id):
-    if session.get('role') != 'admin':
-        return jsonify({"status": "error"}), 403
     try:
         collection.delete_one({"_id": ObjectId(id)})
+        return jsonify({"status": "success"})
+    except Exception as e:
+        print(f"Error deleting log: {e}")
+        return jsonify({"status": "error"})
+
+
+@app.route('/api/admin/clear_logs', methods=['POST'])
+@admin_required
+def clear_logs():
+    try:
+        collection.delete_many({})
         return jsonify({"status": "success"})
     except:
         return jsonify({"status": "error"})
 
-
-@app.route('/clear_logs')
-def clear_logs():
-    if session.get('role') != 'admin':
-        return redirect(url_for('index'))
-    collection.delete_many({})
-    return redirect(url_for('riwayat'))
-
 # ============================================
-# 6. CORE FACE RECOGNITION API
+# 7. PUBLIC FACE RECOGNITION API
 # ============================================
 
 
-@app.route('/process_image', methods=['POST'])
+@app.route('/api/process_image', methods=['POST'])
 def process_image():
+    """Public API - Face scanning for attendance"""
     try:
         data = request.json['image']
         img = face_engine.process_base64_image(data)
@@ -273,23 +286,22 @@ def process_image():
         if status == "error":
             return jsonify({"status": "error", "message": message})
 
-        tgl_hari_ini = datetime.now().strftime("%Y-%m-%d")
+        today_date = datetime.now().strftime("%Y-%m-%d")
 
-        # Cek apakah sudah absen hari ini di MongoDB
-        log_ada = collection.find_one({"nama": nama, "tanggal": tgl_hari_ini})
-        if log_ada:
+        # Check if already marked attendance today in MongoDB
+        existing_log = collection.find_one({"nama": nama, "tanggal": today_date})
+        if existing_log:
             return jsonify({"status": "already_present", "nama": nama})
 
-        # A. Simpan ke MongoDB
+        # A. Save to MongoDB
         collection.insert_one({
             "nama": nama,
-            "tanggal": tgl_hari_ini,
+            "tanggal": today_date,
             "waktu": datetime.now().strftime("%H:%M:%S"),
             "created_at": datetime.now()
         })
 
-        # B. KIRIM KE GOOGLE SHEETS
-        # Menggunakan ID singkat dari nama atau UID statis
+        # B. Send to Google Sheets
         u_id = f"ID-{(nama[:3]).upper()}"
         log_to_sheets(nama, u_id)
 
@@ -299,10 +311,9 @@ def process_image():
         return jsonify({"status": "error", "message": str(e)})
 
 
-@app.route('/register_face', methods=['POST'])
+@app.route('/api/register_face', methods=['POST'])
 def register_face():
-    if session.get('role') != 'admin':
-        return jsonify({"status": "error"})
+    """Public API - Face registration"""
     data = request.json
     nama = data.get('nama')
     img_data = data.get('image')
@@ -330,41 +341,30 @@ def register_face():
     return jsonify({"status": "error", "message": msg})
 
 # ============================================
-# 7. CALENDAR & UTILITY
+# 8. CALENDAR & UTILITY API
 # ============================================
 
 
 @app.route('/api/today_log')
 def today_log():
-    tgl = datetime.now().strftime("%Y-%m-%d")
-    role = session.get('role')
-    user_sekarang = session.get('user')
-    query = {"tanggal": tgl}
-    if role != 'admin':
-        query["nama"] = user_sekarang
+    """Get today's attendance logs - public access"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    query = {"tanggal": today}
     logs = list(collection.find(query).sort("created_at", -1))
     return jsonify([{"nama": l.get('nama', 'Unknown'), "waktu": l['waktu']} for l in logs])
 
 
-@app.route('/api/calendar_events')
+@app.route('/api/admin/calendar_events')
+@admin_required
 def calendar_events():
-    if not is_logged_in():
-        return jsonify([])
-    role = session.get('role')
-    user_sekarang = session.get('user')
+    """Admin-only calendar events"""
     events = []
-    if role == 'admin':
-        pipeline = [{"$group": {"_id": "$tanggal", "count": {"$sum": 1}, "details": {
-            "$push": {"nama": {"$ifNull": ["$nama", "Unknown"]}, "waktu": "$waktu"}}}}]
-        logs_grouped = list(collection.aggregate(pipeline))
-        for g in logs_grouped:
-            events.append({"title": str(g['count']), "start": g['_id'], "extendedProps": {
-                          "is_admin": True, "count": g['count'], "users": g['details']}, "backgroundColor": "transparent", "borderColor": "transparent"})
-    else:
-        logs = list(collection.find({"nama": user_sekarang}))
-        for l in logs:
-            events.append({"title": "Hadir", "start": l['tanggal'], "extendedProps": {"is_admin": False, "nama": l.get(
-                'nama', user_sekarang), "waktu": l['waktu']}, "backgroundColor": "transparent", "borderColor": "transparent"})
+    pipeline = [{"$group": {"_id": "$tanggal", "count": {"$sum": 1}, "details": {
+        "$push": {"nama": {"$ifNull": ["$nama", "Unknown"]}, "waktu": "$waktu"}}}}]
+    logs_grouped = list(collection.aggregate(pipeline))
+    for g in logs_grouped:
+        events.append({"title": str(g['count']), "start": g['_id'], "extendedProps": {
+                      "is_admin": True, "count": g['count'], "users": g['details']}, "backgroundColor": "transparent", "borderColor": "transparent"})
     return jsonify(events)
 
 

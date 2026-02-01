@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -30,7 +30,10 @@
       content="Advanced Face Recognition Attendance System powered by AI."
     />
 
-    <meta name="google-site-verification" content="urTeNm1jmxAehO0n85TH6Xk70oJWgM2_UA4Iufb9ig0" />
+    <meta
+      name="google-site-verification"
+      content="urTeNm1jmxAehO0n85TH6Xk70oJWgM2_UA4Iufb9ig0"
+    />
 
     <!-- Theme Color -->
     <meta name="theme-color" content="#020617" />
@@ -86,35 +89,42 @@
         <div
           class="hidden md:flex gap-8 items-center text-[10px] font-black uppercase tracking-[0.2em]"
         >
-          <a
-            href="/"
-            class="flex items-center gap-2 text-slate-400 hover:text-blue-400 transition -all"
-            ><i data-lucide="scan-face" class="w-4 h-4"></i> Scanner</a
-          >
-          <a
-            href="/riwayat"
-            class="flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-all"
-            ><i data-lucide="history" class="w-4 h-4"></i> Riwayat</a
-          >
           {% if session.get('role') == 'admin' %}
-          <div class="h-4 w-[1px] bg-white/10 mx-2"></div>
+          <!-- Admin Menu -->
           <a
-            href="/daftar_user"
+            href="/admin/history"
             class="flex items-center gap-2 text-amber-400/80 hover:text-amber-400 transition-all"
+            ><i data-lucide="history" class="w-4 h-4"></i> History</a
+          >
+          <a
+            href="/admin/database"
+            class="flex items-center gap-2 text-emerald-400/80 hover:text-emerald-400 transition-all"
             ><i data-lucide="users" class="w-4 h-4"></i> Database</a
           >
-          <a
-            href="/tambah_wajah"
-            class="flex items-center gap-2 text-emerald-400/80 hover:text-emerald-400 transition-all"
-            ><i data-lucide="user-plus" class="w-4 h-4"></i> Registrasi</a
-          >
-          {% endif %}
           <a
             href="javascript:void(0)"
             onclick="confirmLogout(event)"
             class="ml-4 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
             >Logout</a
           >
+          {% else %}
+          <!-- End User Menu -->
+          <a
+            href="/"
+            class="flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-all"
+            ><i data-lucide="scan-face" class="w-4 h-4"></i> Scanner</a
+          >
+          <a
+            href="/register"
+            class="flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-all"
+            ><i data-lucide="user-plus" class="w-4 h-4"></i> Register</a
+          >
+          <a
+            href="/login"
+            class="ml-4 px-4 py-2 bg-blue-500/10 border border-blue-500/20 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all"
+            >Admin Login</a
+          >
+          {% endif %}
         </div>
       </nav>
 
@@ -178,7 +188,34 @@
     <!-- Bottom Navigation (Mobile Only) -->
     <nav class="bottom-nav md:hidden">
       <div class="bottom-nav-container">
-        <!-- 1. Scanner -->
+        {% if session.get('role') == 'admin' %}
+        <!-- Admin Menu -->
+        <a
+          href="/admin/history"
+          class="nav-item {% if request.path == '/admin/history' %}active{% endif %}"
+        >
+          <i data-lucide="history" class="w-6 h-6"></i>
+        </a>
+
+        <!-- Center FAB - Logout for Admin -->
+        <div class="nav-fab-container">
+          <a
+            href="javascript:void(0)"
+            onclick="confirmLogout(event)"
+            class="nav-fab"
+          >
+            <i data-lucide="log-out" class="w-8 h-8 text-white"></i>
+          </a>
+        </div>
+
+        <a
+          href="/admin/database"
+          class="nav-item {% if request.path == '/admin/database' %}active{% endif %}"
+        >
+          <i data-lucide="users" class="w-6 h-6"></i>
+        </a>
+        {% else %}
+        <!-- End User Menu -->
         <a
           href="/"
           class="nav-item {% if request.path == '/' %}active{% endif %}"
@@ -186,40 +223,17 @@
           <i data-lucide="scan-face" class="w-6 h-6"></i>
         </a>
 
-        <!-- 2. Riwayat -->
-        <a
-          href="/riwayat"
-          class="nav-item {% if request.path == '/riwayat' %}active{% endif %}"
-        >
-          <i data-lucide="history" class="w-6 h-6"></i>
-        </a>
-
-        <!-- 3. Registrasi (Center FAB) - Admin Only -->
-        {% if session.get('role') == 'admin' %}
+        <!-- Center FAB - Register -->
         <div class="nav-fab-container">
-          <a href="/tambah_wajah" class="nav-fab">
+          <a href="/register" class="nav-fab">
             <i data-lucide="plus" class="w-8 h-8 text-white"></i>
           </a>
         </div>
-        {% endif %}
 
-        <!-- 4. Database - Admin Only -->
-        {% if session.get('role') == 'admin' %}
-        <a
-          href="/daftar_user"
-          class="nav-item {% if request.path == '/daftar_user' %}active{% endif %}"
-        >
-          <i data-lucide="users" class="w-6 h-6"></i>
+        <a href="/login" class="nav-item">
+          <i data-lucide="log-in" class="w-6 h-6 text-blue-500/80"></i>
         </a>
         {% endif %}
-
-        <a
-          href="javascript:void(0)"
-          onclick="confirmLogout(event)"
-          class="nav-item"
-        >
-          <i data-lucide="log-out" class="w-6 h-6 text-red-500/80"></i>
-        </a>
       </div>
     </nav>
 
