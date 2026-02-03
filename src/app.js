@@ -119,7 +119,7 @@ function initScannerPage() {
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       const msg = new SpeechSynthesisUtterance(text);
-      msg.lang = "id-ID";
+      msg.lang = "en-US";
       msg.rate = 1.1;
       msg.pitch = 1.0;
       window.speechSynthesis.speak(msg);
@@ -162,25 +162,54 @@ function initScannerPage() {
     });
 
     const isMobile = window.innerWidth < 768;
-    // Using global Camera from window.Camera assigned in main.js
-    const camera = new Camera(video, {
-      onFrame: async () => {
-        await faceDetection.send({ image: video });
-      },
-      width: isMobile ? 720 : 1280,
-      height: isMobile ? 1280 : 720,
-    });
-    camera.start().catch((e) => {
-      console.error("Camera detection error:", e);
-      Swal.fire({
-        icon: "error",
-        title: "Camera Not Detected",
-        text: "Failed to access camera feed. Make sure camera permission is enabled and not being used by another application.",
-        background: "#0f172a",
-        color: "#fff",
-        confirmButtonColor: "#3b82f6",
+    // --- Camera Control Logic ---
+    const cameraToggle = document.getElementById("cameraToggle");
+    let camera = null;
+
+    window.toggleCamera = async function (isActive) {
+      if (isActive) {
+        updateStatus("Initializing...", "bg-blue-500");
+        if (!camera) {
+          camera = new Camera(video, {
+            onFrame: async () => {
+              if (cameraToggle.checked) {
+                await faceDetection.send({ image: video });
+              }
+            },
+            width: isMobile ? 720 : 1280,
+            height: isMobile ? 1280 : 720,
+          });
+        }
+        try {
+          await camera.start();
+          updateStatus("Scanning...", "bg-emerald-500");
+        } catch (e) {
+          console.error("Camera detection error:", e);
+          cameraToggle.checked = false;
+          updateStatus("Cam Error", "bg-red-500");
+          Swal.fire({
+            icon: "error",
+            title: "Camera Not Detected",
+            text: "Failed to access camera feed.",
+            background: "#0f172a",
+            color: "#fff",
+          });
+        }
+      } else {
+        if (camera) {
+          await camera.stop();
+          // Clear guideline and status
+          guideline.classList.add("hidden");
+          updateStatus("System Idle", "bg-slate-600");
+        }
+      }
+    };
+
+    if (cameraToggle) {
+      cameraToggle.addEventListener("change", (e) => {
+        toggleCamera(e.target.checked);
       });
-    });
+    }
   }
 
   // --- Process Scan API ---
@@ -210,9 +239,13 @@ function initScannerPage() {
         updateStatus(data.nama.toUpperCase(), "bg-emerald-500");
         speak("Attendance successful. Thank you " + data.nama);
         loadLogs();
-        setTimeout(() => {
-          isProcessing = false;
-        }, 3000);
+        // Show the new modular success alert
+        showSuccessAlert(
+          data.nama,
+          data.image_preview,
+          data.waktu,
+          data.user_id,
+        );
       } else if (data.status === "already_present") {
         updateStatus("DONE", "bg-green-500");
         speak("You have already attended today.");
@@ -234,11 +267,17 @@ function initScannerPage() {
   // --- Load Logs ---
   async function loadLogs() {
     const logsContainer = document.getElementById("today-logs");
+    const emptyState = document.getElementById("empty-logs-state");
     if (!logsContainer) return;
 
     try {
       const r = await fetch("/api/today_log");
       const d = await r.json();
+
+      if (emptyState) {
+        emptyState.classList.toggle("hidden", d.length > 0);
+      }
+
       logsContainer.innerHTML = d
         .map(
           (l) => `
@@ -255,6 +294,47 @@ function initScannerPage() {
       console.error("Error loading logs", e);
     }
   }
+
+  // --- Custom Success Alert ---
+  window.showSuccessAlert = function (nama, imagePreview, waktu, userId) {
+    const overlay = document.createElement("div");
+    overlay.className = "scan-success-overlay";
+    overlay.innerHTML = `
+            <div class="scan-success-card">
+                <div class="scan-success-badge">Scanning Success</div>
+                <div class="scan-success-img-wrapper">
+                    <img src="${imagePreview || "/static/default_user.png"}" class="scan-success-img" alt="User image">
+                </div>
+                <h2 class="scan-success-name">${nama}</h2>
+                <div class="scan-success-details">
+                    <div class="scan-detail-item">
+                        <i data-lucide="clock" class="w-3 h-3 text-blue-400"></i>
+                        <span>${waktu}</span>
+                    </div>
+                    <div class="scan-detail-item">
+                        <i data-lucide="shield-check" class="w-3 h-3 text-emerald-400"></i>
+                        <span class="font-mono text-[8px] opacity-60">${userId}</span>
+                    </div>
+                </div>
+                <div class="scan-timeline-container">
+                    <div class="scan-timeline-bar"></div>
+                </div>
+            </div>
+        `;
+
+    document.body.appendChild(overlay);
+    if (typeof window.lucide !== "undefined") window.lucide.createIcons();
+
+    // Auto close after 5 seconds
+    setTimeout(() => {
+      overlay.style.opacity = "0";
+      overlay.style.transition = "opacity 0.5s ease-out";
+      setTimeout(() => {
+        overlay.remove();
+        isProcessing = false; // Reset scanner for next person
+      }, 500);
+    }, 5000);
+  };
 
   // Initial load
   loadLogs();
@@ -496,7 +576,7 @@ function initRegistrationPage() {
           background: "#0f172a",
           color: "#fff",
         }).then(() => {
-          window.location.href = "/admin/database";
+          window.location.href = "/";
         });
       } else {
         Swal.fire({
@@ -848,7 +928,15 @@ function initUserDatabasePage() {
         }
       });
 
-      if (noResult) noResult.classList.toggle("hidden", hasMatch);
+      if (noResult) {
+        // Only show "No Result" if there's actually a search term AND we have some users in the DB
+        // If DB is empty, userRows.length will be 0 and the "Database is Empty" state from Jinja handles it.
+        if (term !== "" && userRows.length > 0) {
+          noResult.classList.toggle("hidden", hasMatch);
+        } else {
+          noResult.classList.add("hidden");
+        }
+      }
     });
   }
 
@@ -929,6 +1017,7 @@ function initUserDatabasePage() {
               row.style.transform = "translateX(50px)";
               row.style.opacity = "0";
               setTimeout(() => row.remove(), 300);
+              setTimeout(() => location.reload(), 500);
             } else {
               Swal.fire({
                 icon: "error",

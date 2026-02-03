@@ -14,15 +14,25 @@ endblock %} {% block head %}
         <div
           class="absolute top-4 left-4 z-50 bg-black/60 backdrop-blur-md p-2 px-3 rounded-xl flex items-center gap-2 border border-white/10"
         >
-          <div
-            id="status-dot"
-            class="w-2 h-2 rounded-full bg-emerald-500"
-          ></div>
+          <div id="status-dot" class="w-2 h-2 rounded-full bg-slate-600"></div>
           <span
             id="status-text"
             class="text-white font-bold text-[8px] tracking-widest uppercase"
-            >System Active</span
+            >System Idle</span
           >
+          <div class="h-4 w-[1px] bg-white/10 mx-1"></div>
+          <label class="flex items-center cursor-pointer group">
+            <span
+              class="text-[8px] font-bold text-slate-500 uppercase tracking-widest mr-2 group-hover:text-blue-400 transition-colors"
+              >Cam</span
+            >
+            <div class="relative">
+              <input type="checkbox" id="cameraToggle" class="sr-only peer" />
+              <div
+                class="w-7 h-4 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 peer-checked:after:bg-white shadow-inner"
+              ></div>
+            </div>
+          </label>
         </div>
 
         <video
@@ -48,10 +58,32 @@ endblock %} {% block head %}
         >
           Attendance List
         </h3>
-        <div
-          id="today-logs"
-          class="space-y-2 overflow-y-auto flex-1 pr-2 custom-scrollbar"
-        ></div>
+        <div id="today-logs-container" class="flex-1 overflow-hidden relative">
+          <div
+            id="today-logs"
+            class="space-y-2 overflow-y-auto h-full pr-2 custom-scrollbar"
+          ></div>
+          <!-- Empty State -->
+          <div
+            id="empty-logs-state"
+            class="hidden absolute inset-0 flex flex-col items-center justify-center opacity-40"
+          >
+            <i
+              data-lucide="calendar-x"
+              class="w-10 h-10 text-slate-500 mb-3"
+            ></i>
+            <p
+              class="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em] text-center"
+            >
+              No Activity Today
+            </p>
+            <p
+              class="text-[7px] text-slate-600 mt-1 uppercase tracking-widest text-center"
+            >
+              Awaiting first attendance...
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -95,7 +95,6 @@ To ensure a smooth setup across all platforms (Windows, Linux, macOS), follow th
 # Clone the repository
 git clone https://github.com/Dickybulin26/face_attendance_1kb04.git
 cd face_attendance_1kb04
-
 ```
 
 ### 3. Environment Configuration
@@ -119,6 +118,9 @@ Fill in the following variables in `.env`:
 ### 4. Launching the System
 
 ```bash
+# Add Permission (linux only)
+chmod +x run_app.sh
+
 # Run app
 ./run_app.sh
 ```

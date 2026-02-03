@@ -20,8 +20,8 @@
         <input
           type="text"
           id="tableSearch"
-          placeholder="Filter Identity..."
-          class="search-input rounded-xl py-2.5 pl-9 pr-4 text-[11px] w-full md:w-64 bg-white/5 border border-white/10 text-white focus:outline-none focus:border-blue-500 transition-all"
+          placeholder="Search..."
+          class="search-input rounded-xl py-2.5 pl-4 pr-4 text-[11px] w-full md:w-64 bg-white/5 border border-white/10 text-white focus:outline-none focus:border-blue-500 transition-all"
         />
       </div>
     </div>
@@ -62,7 +62,7 @@
                   <span class="text-[10px] text-blue-400 font-mono font-bold"
                     >{{ log.waktu }}</span
                   >
-                  <span class="text-[8px] text-slate-600 font-mono"
+                  <span class="text-[8px] text-white-600 font-mono"
                     >{{ log.tanggal }}</span
                   >
                 </div>
@@ -146,10 +146,10 @@
             class="w-1 h-3 bg-blue-500/50 group-hover:bg-blue-500 transition-colors"
           ></div>
           <div class="flex-1 min-w-0">
-            <p class="text-[10px] font-bold text-slate-300 truncate uppercase">
+            <p class="text-[10px] font-bold text-blue-600 truncate uppercase">
               {{ log.nama }}
             </p>
-            <p class="text-[8px] text-slate-600 font-mono">{{ log.waktu }}</p>
+            <p class="text-[8px] text-white-600 font-mono">{{ log.waktu }}</p>
           </div>
         </div>
         {% endfor %}

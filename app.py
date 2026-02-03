@@ -112,7 +112,7 @@ def login():
     # Redirect already logged-in admins to their dashboard
     if session.get('role') == 'admin':
         return redirect(url_for('admin_history'))
-    
+
     if request.method == 'POST':
         # Handle AJAX/JSON Login
         if request.is_json:
@@ -289,7 +289,8 @@ def process_image():
         today_date = datetime.now().strftime("%Y-%m-%d")
 
         # Check if already marked attendance today in MongoDB
-        existing_log = collection.find_one({"nama": nama, "tanggal": today_date})
+        existing_log = collection.find_one(
+            {"nama": nama, "tanggal": today_date})
         if existing_log:
             return jsonify({"status": "already_present", "nama": nama})
 
@@ -305,7 +306,20 @@ def process_image():
         u_id = f"ID-{(nama[:3]).upper()}"
         log_to_sheets(nama, u_id)
 
-        return jsonify({"status": "success", "nama": nama})
+        # C. Get user image for frontend alert
+        user_info = users_collection.find_one(
+            {"nama": nama}, {"image_preview": 1, "_id": 1})
+        image_preview = user_info.get("image_preview") if user_info else None
+        user_id = str(user_info.get("_id")) if user_info else "N/A"
+        waktu = datetime.now().strftime("%H:%M:%S")
+
+        return jsonify({
+            "status": "success",
+            "nama": nama,
+            "image_preview": image_preview,
+            "waktu": waktu,
+            "user_id": user_id
+        })
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"status": "error", "message": str(e)})
