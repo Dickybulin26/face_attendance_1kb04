@@ -95,7 +95,10 @@ face_engine = FaceEngine(known_faces_dir='known_faces')
 # ============================================
 # 3. AUTHENTICATION & HELPERS
 # ============================================
-USERS = {"admin": "123"}
+# Admin credentials (configured via environment variables)
+ADMIN_USER = os.getenv("ADMIN_USER")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+USERS = {ADMIN_USER: ADMIN_PASSWORD}
 
 
 def admin_required(f):

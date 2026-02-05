@@ -89,7 +89,7 @@ status() {
     
     echo ""
     print_info "Health status:"
-    docker inspect --format='{{.State.Health.Status}}' absensipro_staging 2>/dev/null || echo "No health check available"
+    docker inspect --format='{{.State.Health.Status}}' absensipro 2>/dev/null || echo "No health check available"
     
     echo ""
     print_info "Recent logs:"

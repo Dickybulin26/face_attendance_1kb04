@@ -100,6 +100,7 @@ cd face_attendance_1kb04
 ### 3. Environment Configuration
 
 Copy `.env.example` to `.env` and fill in your credentials:
+
 ```bash
 cp .env.example .env
 ```
@@ -111,6 +112,7 @@ touch credentials.json
 ```
 
 Fill in the following variables in `.env`:
+
 - `MONGO_URI`: Your MongoDB Atlas connection string.
 - `GOOGLE_SHEETS_CREDENTIALS`: Path to your `credentials.json`.
 - `GOOGLE_SHEETS_NAME`: Your spreadsheet title.
@@ -129,22 +131,41 @@ Access at `http://localhost:5000`
 
 ---
 
-## Docker Setup
+Access at `http://localhost:5000`
+
+---
+
+## Production Deployment (Recommended)
+
+The system includes a production-ready `deploy.sh` script to manage the Docker lifecycle.
+
+### 1. Configure Environment
+
+Prepare your `.env` and `credentials.json` as described in the Installation Guide.
+
+### 2. Manage with Deploy Script
 
 ```bash
-# Build the image
-docker-compose build
+chmod +x deploy.sh
 
-# Run the container
-docker-compose up -d
+# Build and start the system
+./deploy.sh build
+./deploy.sh start
+
+# Check status
+./deploy.sh status
 ```
 
 Access at `http://localhost:1324`
 
-```bash
-# To stop the container
-docker-compose down
-```
+### 3. Utility Commands
+
+- `./deploy.sh stop` - Stop the system
+- `./deploy.sh logs` - View real-time logs
+- `./deploy.sh restart` - Restart the container
+
+---
+
 ---
 
 ## Docker Pull From DockerHub Repository
